@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 interface MathQuestionProps {
   question: string;
@@ -10,70 +10,57 @@ interface MathQuestionProps {
 }
 
 export default function MathQuestion({ question, answer, hint, onComplete }: MathQuestionProps) {
-  const [userAnswer, setUserAnswer] = useState('');
+  const [userAnswer, setUserAnswer] = useState("");
   const [showHint, setShowHint] = useState(false);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
 
   const handleSubmit = () => {
     const isCorrect = parseInt(userAnswer) === answer;
-    setFeedback(isCorrect ? 'correct' : 'incorrect');
-
+    setFeedback(isCorrect ? "correct" : "incorrect");
     if (isCorrect) {
-      setTimeout(() => {
-        onComplete(true);
-      }, 2000);
+      setTimeout(() => onComplete(true), 1500);
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-      <h3 className="text-2xl font-bold text-purple-600 mb-4">Math Challenge!</h3>
+    <div className="w-full max-w-xs">
+      <p className="text-xs text-stone-500 mb-1">Math</p>
+      <p className="text-stone-900 mb-4">{question}</p>
 
-      <div className="mb-6">
-        <p className="text-lg text-gray-800 mb-4">{question}</p>
+      <input
+        type="number"
+        value={userAnswer}
+        onChange={(e) => setUserAnswer(e.target.value)}
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:border-stone-500 focus:ring-0 outline-none mb-2"
+        placeholder="Answer"
+        disabled={feedback === "correct"}
+      />
 
-        <input
-          type="number"
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-          className="w-full px-4 py-3 text-lg border-2 border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none"
-          placeholder="Your answer..."
-          disabled={feedback === 'correct'}
-        />
-      </div>
-
-      {feedback === 'correct' && (
-        <div className="bg-green-100 border-2 border-green-500 rounded-lg p-4 mb-4">
-          <p className="text-green-700 font-bold text-lg">🎉 Excellent! That's correct!</p>
-        </div>
+      {feedback === "correct" && (
+        <p className="text-green-600 text-sm mb-2">Correct!</p>
+      )}
+      {feedback === "incorrect" && (
+        <p className="text-red-500 text-sm mb-2">Try again</p>
       )}
 
-      {feedback === 'incorrect' && (
-        <div className="bg-red-100 border-2 border-red-500 rounded-lg p-4 mb-4">
-          <p className="text-red-700 font-bold">Not quite. Try again!</p>
-        </div>
+      {hint && !feedback && (
+        <button
+          onClick={() => setShowHint(!showHint)}
+          className="text-xs text-stone-400 hover:text-stone-600 mb-2"
+        >
+          {showHint ? "Hide hint" : "Hint"}
+        </button>
       )}
-
-      {hint && (
-        <div className="mb-4">
-          <button
-            onClick={() => setShowHint(!showHint)}
-            className="text-blue-600 hover:text-blue-800 underline text-sm"
-          >
-            {showHint ? 'Hide hint' : 'Need a hint?'}
-          </button>
-          {showHint && (
-            <p className="mt-2 text-sm text-gray-600 bg-blue-50 p-3 rounded">{hint}</p>
-          )}
-        </div>
+      {showHint && hint && (
+        <p className="text-xs text-stone-500 bg-stone-50 p-2 rounded mb-2">{hint}</p>
       )}
 
       <button
         onClick={handleSubmit}
-        disabled={!userAnswer || feedback === 'correct'}
-        className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+        disabled={!userAnswer || feedback === "correct"}
+        className="w-full bg-stone-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-stone-800 disabled:bg-stone-300"
       >
-        Check Answer
+        Check
       </button>
     </div>
   );

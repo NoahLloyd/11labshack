@@ -226,13 +226,34 @@ export default function Home() {
       <section id="library" className="px-6 pb-16">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">Story Library</h2>
+            <h2 className="text-2xl font-bold">More Stories</h2>
             <span className="text-sm text-gray-500">
-              {stories.length} stories available
+              {otherStories.length + 1} options
             </span>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Create Your Own Card - First */}
+            <div
+              id="create"
+              className="group bg-white rounded-2xl border-2 border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all cursor-pointer"
+            >
+              <div className="h-48 bg-gray-100 flex items-center justify-center">
+                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <Plus className="w-7 h-7 text-gray-400 group-hover:text-gray-600" />
+                </div>
+              </div>
+              <div className="p-5">
+                <h3 className="font-semibold mb-1 group-hover:text-gray-900">
+                  Create Your Own
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Make your own story
+                </p>
+                <span className="text-xs text-gray-400">Start creating →</span>
+              </div>
+            </div>
+
             {otherStories.map((story) => (
               <div
                 key={story.id}
@@ -263,28 +284,6 @@ export default function Home() {
                 </div>
               </div>
             ))}
-
-            {/* Create Your Own Card */}
-            <div
-              id="create"
-              className="group bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden hover:border-violet-400 hover:from-violet-50 hover:to-fuchsia-50 transition-all cursor-pointer"
-            >
-              <div className="h-full flex flex-col items-center justify-center p-6 text-center min-h-[320px]">
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:shadow-md group-hover:bg-violet-100 transition-all">
-                  <Plus className="w-8 h-8 text-gray-400 group-hover:text-violet-600 transition-colors" />
-                </div>
-                <h3 className="font-semibold mb-2 group-hover:text-violet-600 transition-colors">
-                  Create Your Own
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Design a custom story with your own characters and adventures
-                </p>
-                <div className="inline-flex items-center gap-1 text-sm font-medium text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Sparkles className="w-4 h-4" />
-                  Coming soon
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
