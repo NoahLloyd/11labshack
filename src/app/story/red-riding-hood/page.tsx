@@ -35,12 +35,44 @@ export default function RedRidingHoodStory() {
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentScene, setCurrentScene] = useState(1);
-  const [component, setComponent] = useState<InteractiveComponent>({ type: null });
+  const [hasPermission, setHasPermission] = useState(false);
+  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  const [component, setComponent] = useState<InteractiveComponent>({
+    type: null,
+  });
   const conversationRef = useRef<Conversation | null>(null);
 
   useEffect(() => {
     createAgent();
+    checkMicrophonePermission();
   }, []);
+
+  const checkMicrophonePermission = async () => {
+    try {
+      const result = await navigator.permissions.query({
+        name: "microphone" as PermissionName,
+      });
+      setHasPermission(result.state === "granted");
+      if (result.state === "prompt") {
+        setShowPermissionPrompt(true);
+      }
+    } catch {
+      console.log("Permission API not supported, will request on start");
+    }
+  };
+
+  const requestMicrophoneAccess = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setHasPermission(true);
+      setShowPermissionPrompt(false);
+    } catch {
+      setError(
+        "Microphone access is required for voice interaction. Please enable it in your browser settings."
+      );
+    }
+  };
 
   const createAgent = async () => {
     try {
@@ -72,7 +104,60 @@ export default function RedRidingHoodStory() {
         onModeChange: (mode) => {
           setIsSpeaking(mode.mode === "speaking");
         },
-        onToolCall: handleToolCall,
+        clientTools: {
+          show_graphic: (parameters: { scene: number }) => {
+            console.log("show_graphic called:", parameters);
+            setCurrentScene(parameters.scene || 1);
+          },
+          show_math: async (parameters: {
+            question: string;
+            answer: number;
+            hint?: string;
+          }) => {
+            console.log("show_math called:", parameters);
+            return new Promise<string>((resolve) => {
+              setComponent({
+                type: "math",
+                props: {
+                  question: parameters.question,
+                  answer: parameters.answer,
+                  hint: parameters.hint,
+                  onComplete: (correct: boolean) => {
+                    setComponent({ type: null });
+                    resolve(JSON.stringify({ correct }));
+                  },
+                },
+              });
+            });
+          },
+          show_spelling: async (parameters: {
+            word: string;
+            context: string;
+          }) => {
+            console.log("show_spelling called:", parameters);
+            return new Promise<string>((resolve) => {
+              setComponent({
+                type: "spelling",
+                props: {
+                  word: parameters.word,
+                  context: parameters.context,
+                  onComplete: (correct: boolean) => {
+                    setComponent({ type: null });
+                    resolve(JSON.stringify({ correct }));
+                  },
+                },
+              });
+            });
+          },
+          show_completion: (parameters: { message: string }) => {
+            console.log("show_completion called:", parameters);
+            setComponent({
+              type: "completion",
+              props: { message: parameters.message },
+            });
+            setTimeout(() => setComponent({ type: null }), 3000);
+          },
+        },
       });
       conversationRef.current = conv;
       setError(null);
@@ -80,56 +165,6 @@ export default function RedRidingHoodStory() {
       setError(err instanceof Error ? err.message : "Failed to start");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleToolCall = (toolCall: {
-    toolName: string;
-    parameters: Record<string, unknown>;
-    toolCallId?: string;
-  }) => {
-    const { toolName, parameters } = toolCall;
-
-    if (toolName === "show_graphic") {
-      setCurrentScene((parameters.scene as number) || 1);
-    } else if (toolName === "show_math") {
-      setComponent({
-        type: "math",
-        props: {
-          question: parameters.question,
-          answer: parameters.answer,
-          hint: parameters.hint,
-          onComplete: (correct: boolean) => {
-            if (conversationRef.current && toolCall.toolCallId) {
-              conversationRef.current.sendToolResponse({
-                toolCallId: toolCall.toolCallId,
-                response: JSON.stringify({ correct }),
-              });
-            }
-            setComponent({ type: null });
-          },
-        },
-      });
-    } else if (toolName === "show_spelling") {
-      setComponent({
-        type: "spelling",
-        props: {
-          word: parameters.word,
-          context: parameters.context,
-          onComplete: (correct: boolean) => {
-            if (conversationRef.current && toolCall.toolCallId) {
-              conversationRef.current.sendToolResponse({
-                toolCallId: toolCall.toolCallId,
-                response: JSON.stringify({ correct }),
-              });
-            }
-            setComponent({ type: null });
-          },
-        },
-      });
-    } else if (toolName === "show_completion") {
-      setComponent({ type: "completion", props: { message: parameters.message } });
-      setTimeout(() => setComponent({ type: null }), 3000);
     }
   };
 
@@ -150,16 +185,27 @@ export default function RedRidingHoodStory() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-stone-200">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="text-stone-500 hover:text-stone-900 text-sm">
+          <Link
+            href="/"
+            className="text-stone-500 hover:text-stone-900 text-sm"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <span className="text-sm font-medium text-stone-900">Little Red Riding Hood</span>
+          <span className="text-sm font-medium text-stone-900">
+            Little Red Riding Hood
+          </span>
           {isConnected ? (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className={`p-2 rounded-full ${isMuted ? "text-red-500" : "text-stone-500"}`}
+              className={`p-2 rounded-full ${
+                isMuted ? "text-red-500" : "text-stone-500"
+              }`}
             >
-              {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isMuted ? (
+                <MicOff className="w-4 h-4" />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
             </button>
           ) : (
             <div className="w-8" />
@@ -170,7 +216,10 @@ export default function RedRidingHoodStory() {
       <main className="pt-14 min-h-screen flex flex-col">
         {error && (
           <div className="bg-red-50 text-red-700 px-4 py-2 text-sm text-center">
-            {error} · <button onClick={createAgent} className="underline">Retry</button>
+            {error} ·{" "}
+            <button onClick={createAgent} className="underline">
+              Retry
+            </button>
           </div>
         )}
 
@@ -195,10 +244,39 @@ export default function RedRidingHoodStory() {
               Little Red Riding Hood
             </h1>
             <p className="text-stone-500 text-sm mb-8 text-center max-w-xs">
-              An interactive story with voice, math challenges, and spelling practice.
+              An interactive story with voice, math challenges, and spelling
+              practice.
             </p>
+
+            {showPermissionPrompt && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 max-w-xs">
+                <div className="flex items-start gap-3">
+                  <Mic className="w-5 h-5 text-amber-600 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-amber-900 mb-1 text-sm">
+                      Microphone Access
+                    </h4>
+                    <p className="text-xs text-amber-700 mb-2">
+                      Enable your microphone for voice interaction.
+                    </p>
+                    <button
+                      onClick={requestMicrophoneAccess}
+                      className="bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-700"
+                    >
+                      Enable
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
-              onClick={startConversation}
+              onClick={async () => {
+                if (!hasPermission) {
+                  await requestMicrophoneAccess();
+                }
+                startConversation();
+              }}
               disabled={isLoading || !agentId}
               className="inline-flex items-center gap-2 bg-stone-900 text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
             >
@@ -209,6 +287,13 @@ export default function RedRidingHoodStory() {
               )}
               {isLoading ? "Loading..." : "Begin Story"}
             </button>
+
+            {hasPermission && (
+              <p className="text-xs text-green-600 mt-3 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                Microphone ready
+              </p>
+            )}
           </div>
         ) : (
           /* Story Experience */
@@ -226,7 +311,7 @@ export default function RedRidingHoodStory() {
               />
               {/* Fallback gradient */}
               <div className="absolute inset-0 bg-gradient-to-b from-rose-100 to-rose-200 -z-10" />
-              
+
               {/* Scene indicator */}
               <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
                 <span className="text-xs font-medium text-stone-700">
@@ -247,7 +332,7 @@ export default function RedRidingHoodStory() {
             <div className="bg-white border-t border-stone-200">
               {/* Progress Bar */}
               <div className="h-1 bg-stone-100">
-                <div 
+                <div
                   className="h-full bg-stone-900 transition-all duration-500"
                   style={{ width: `${(currentScene / 10) * 100}%` }}
                 />
@@ -258,7 +343,9 @@ export default function RedRidingHoodStory() {
                 {component.type === null ? (
                   <div className="text-center py-4">
                     <p className="text-stone-400 text-sm">
-                      {isSpeaking ? "Listen to the story..." : "Say something to continue..."}
+                      {isSpeaking
+                        ? "Listen to the story..."
+                        : "Say something to continue..."}
                     </p>
                   </div>
                 ) : (
@@ -268,18 +355,28 @@ export default function RedRidingHoodStory() {
                         question={component.props.question as string}
                         answer={component.props.answer as number}
                         hint={component.props.hint as string | undefined}
-                        onComplete={component.props.onComplete as (correct: boolean) => void}
+                        onComplete={
+                          component.props.onComplete as (
+                            correct: boolean
+                          ) => void
+                        }
                       />
                     )}
                     {component.type === "spelling" && component.props && (
                       <SpellingChallenge
                         word={component.props.word as string}
                         context={component.props.context as string}
-                        onComplete={component.props.onComplete as (correct: boolean) => void}
+                        onComplete={
+                          component.props.onComplete as (
+                            correct: boolean
+                          ) => void
+                        }
                       />
                     )}
                     {component.type === "completion" && component.props && (
-                      <CompletionMessage message={component.props.message as string} />
+                      <CompletionMessage
+                        message={component.props.message as string}
+                      />
                     )}
                   </div>
                 )}

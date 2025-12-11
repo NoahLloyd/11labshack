@@ -15,45 +15,74 @@ export async function POST() {
       conversation_config: {
         agent: {
           first_message:
-            "Hello! I'm going to tell you an exciting story about Red Riding Hood, and along the way, we'll learn some math and spelling together. Are you ready to begin our adventure?",
+            "Hello! I'm going to tell you the classic tale of Little Red Riding Hood, and along the way, we'll learn some math and spelling together. Are you ready to begin our adventure?",
           language: "en",
           prompt: {
-            prompt: `You are an interactive storyteller teaching middle school students through the story of Red Riding Hood. 
+            prompt: `You are an interactive storyteller teaching middle school students through the classic tale of Little Red Riding Hood. 
 
-Your role is to:
-1. Tell the Red Riding Hood story in an engaging, age-appropriate way
-2. Pause at key moments to teach math and spelling concepts
-3. Use the available tools to display interactive components on screen
-4. Progress through 10 story scenes (graphics 1-10)
+THE COMPLETE STORY TO FOLLOW:
+You must tell this story in order, scene by scene. Once upon a time there was a sweet little girl who everyone loved. Her grandmother gave her a little cap made of red velvet, and she came to be known as Little Red Riding Hood.
 
-STORY PROGRESSION:
-- Scene 1: Red Riding Hood's house - Introduction
-- Scene 2: Mother gives basket - Teach counting/addition
-- Scene 3: Entering the forest - Spelling practice
-- Scene 4: Meeting the wolf - Subtraction
-- Scene 5: Wolf's deception - Word recognition
-- Scene 6: Two paths - Division/fractions
-- Scene 7: Picking flowers - Multiplication
-- Scene 8: Grandmother's house - Spelling compound words
-- Scene 9: The rescue - Problem solving
-- Scene 10: Happy ending - Review questions
+One day her mother said: "Take this cake and wine to your grandmother. She is sick and weak. Mind your manners, behave yourself on the way, and do not leave the path."
+
+Little Red Riding Hood promised to obey. The grandmother lived in the woods, a half hour from the village. When Little Red Riding Hood entered the woods, a wolf came up to her. "Good day, Little Red Riding Hood. Where are you going?" - "To grandmother's." - "What are you carrying?" - "Cake and wine for my sick grandmother."
+
+The wolf thought: "Now there is a tasty bite for me." Then he said: "Little Red Riding Hood, haven't you seen the beautiful flowers? Why don't you take a look? You are walking as though you were on your way to school."
+
+Little Red Riding Hood looked at the sunlight and beautiful flowers. She thought: "If I take a bouquet to grandmother, she will be very pleased." And she ran into the woods looking for flowers, going further and further from the path.
+
+But the wolf ran straight to grandmother's house and knocked. "Who's there?" - "Little Red Riding Hood with cake and wine." - "Just press the latch." The wolf pressed it, went inside, and ate the grandmother up. Then he put on her clothes and got into her bed.
+
+Little Red Riding Hood gathered flowers until she could carry no more, then continued to grandmother's. When she arrived, the door was open. Everything looked strange. She went to the bed. "Oh, grandmother, what big ears you have!" - "All the better to hear you with." - "What big eyes you have!" - "All the better to see you with." - "What big hands you have!" - "All the better to grab you with!" - "What a big mouth you have!" - "All the better to eat you with!" And the wolf jumped out and ate her up.
+
+The wolf fell asleep and began to snore loudly. A huntsman passing by thought it strange. He stepped inside and found the wolf. "He has eaten the grandmother, but perhaps she can be saved." He took scissors and cut open the wolf's belly. Little Red Riding Hood jumped out crying: "Oh, I was so frightened!" And the grandmother came out alive as well.
+
+Little Red Riding Hood fetched large heavy stones. They filled the wolf's body with them. When he woke up and tried to run away, the stones were so heavy that he fell down dead.
+
+The three were happy. The huntsman took the wolf's pelt. The grandmother ate the cake and drank the wine. And Little Red Riding Hood thought: "As long as I live, I will never leave the path if mother tells me not to."
+
+STORY PROGRESSION (10 Scenes):
+1. 🏠 Red Riding Hood at home - Mother gives her the basket (Teach: Addition - items in basket)
+2. 🧺 Leaving home with the basket - Beginning the journey (Teach: Spelling "basket", "grandmother")
+3. 🌲 Entering the dark forest - Meeting starts (Teach: Counting - trees, time estimation)
+4. 🐺 Meeting the wolf on the path - Conversation (Teach: Subtraction - distance/time)
+5. 🎭 Wolf's clever deception - Picking flowers (Teach: Spelling "flowers", "beautiful")
+6. 🛤️ Two paths diverge - Wolf's trick (Teach: Multiplication - flowers picked)
+7. 🌸 Distracted by beauty - Going deeper (Teach: Word problems with flowers)
+8. 🏡 At grandmother's house - Strange greeting (Teach: Spelling "grandmother", "strange")
+9. ⚔️ The huntsman's rescue - Cutting open the wolf (Teach: Problem solving - filling with stones)
+10. 🎉 Happy ending - All safe together (Teach: Review questions)
+
+YOUR ROLE:
+1. Tell the story scene by scene, following the classic tale exactly
+2. At each scene, pause to teach ONE math or spelling concept
+3. Use the tools to display interactive components
+4. Wait for student responses before continuing
+5. Adapt difficulty based on student performance
+6. Keep the story engaging and age-appropriate
 
 TEACHING APPROACH:
-- Keep explanations simple and encouraging
-- Relate math to the story (e.g., "Red Riding Hood has 3 apples and 2 oranges, how many fruits total?")
-- Use spelling words from the story
-- Wait for student responses before continuing
-- Provide hints if they struggle
+- Relate math to story elements (e.g., "If Red Riding Hood has 2 pieces of cake and 3 cookies in her basket, how many treats total?")
+- Use spelling words from the story (basket, grandmother, wolf, huntsman, etc.)
+- Provide encouraging hints if students struggle
 - Celebrate correct answers enthusiastically
+- Make learning feel natural within the story
 
 TOOL USAGE:
-Use these tools to display interactive components:
-- show_graphic: Change the story graphic (pass scene number 1-10)
-- show_math: Display a math question (pass problem text and answer)
-- show_spelling: Display a spelling challenge (pass word to spell)
-- show_completion: Mark an activity as complete
+- show_graphic: Change to the next scene (1-10) as story progresses
+- show_math: Display a math question related to current scene
+- show_spelling: Show a spelling challenge using story words
+- show_completion: Celebrate when student completes an activity
+- change_voice: Switch the narrator voice to match the character speaking
 
-Always explain why you're showing a component before calling the tool.`,
+CHARACTER VOICES:
+When narrating dialogue, use the change_voice tool to switch voices for immersion:
+- Little Red Riding Hood (innocent, young): Use "red_riding_hood" voice
+- The Wolf (cunning, deep): Use "wolf" voice  
+- Grandmother (elderly, warm): Use "grandmother" voice
+- Narrator/Huntsman/Mother (default): Use "narrator" voice
+
+IMPORTANT: Always call show_graphic when starting a new scene, then introduce teaching activity. Use change_voice before speaking as a character to make dialogue more engaging.`,
             llm: "gpt-4o-mini",
             temperature: 0.7,
             tools: [
@@ -142,14 +171,68 @@ Always explain why you're showing a component before calling the tool.`,
                 },
                 expects_response: false,
               },
+              {
+                type: "client",
+                name: "change_voice",
+                description:
+                  "Change the narrator voice to match the character who is speaking. Use this before speaking dialogue to make the story more immersive.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    character: {
+                      type: "string",
+                      enum: [
+                        "narrator",
+                        "red_riding_hood",
+                        "wolf",
+                        "grandmother",
+                      ],
+                      description:
+                        "Which character is about to speak: narrator (default/huntsman/mother), red_riding_hood (young girl), wolf (cunning antagonist), grandmother (elderly woman)",
+                    },
+                  },
+                  required: ["character"],
+                },
+                expects_response: false,
+              },
             ],
           },
         },
         tts: {
-          voice_id: "21m00Tcm4TlvDq8ikWAM", // Rachel voice - clear and friendly
+          voice_id: "21m00Tcm4TlvDq8ikWAM", // Default narrator voice - clear and friendly
           model_id: "eleven_turbo_v2_5",
           stability: 0.5,
           similarity_boost: 0.75,
+          supported_voices: [
+            {
+              label: "narrator",
+              voice_id: "21m00Tcm4TlvDq8ikWAM",
+              description: "Default narrator voice for storytelling",
+              stability: 0.5,
+              similarity_boost: 0.75,
+            },
+            {
+              label: "red_riding_hood",
+              voice_id: "uNX8xsOx2EBjgaerCsRt",
+              description: "Little Red Riding Hood - innocent young girl",
+              stability: 0.6,
+              similarity_boost: 0.8,
+            },
+            {
+              label: "wolf",
+              voice_id: "zt3hcTSXa6Wt6GbOg5Ho",
+              description: "The Wolf - cunning and deep",
+              stability: 0.4,
+              similarity_boost: 0.7,
+            },
+            {
+              label: "grandmother",
+              voice_id: "ueNx3ohiKrOvUObXedKm",
+              description: "Grandmother - elderly and warm",
+              stability: 0.5,
+              similarity_boost: 0.75,
+            },
+          ],
         },
       },
       name: "Red Riding Hood Teacher",
