@@ -62,17 +62,25 @@ const characters: Record<CharacterId, CharacterConfig> = {
   },
 };
 
+// Available backgrounds (will loop through these)
+const backgrounds = [
+  "/background.png", // 1: Forest path scene
+  "/scenes/opening.jpeg", // 2: Opening scene
+  "/scenes/at_home.jpeg", // 3: At home scene
+  "/scenes/goodbye.jpeg", // 4: Goodbye scene
+];
+
 const scenes: { title: string; image: string }[] = [
-  { title: "Home", image: "/background.png" },
-  { title: "The Basket", image: "/background.png" },
-  { title: "Into the Woods", image: "/background.png" },
-  { title: "The Wolf", image: "/background.png" },
-  { title: "A Trick", image: "/background.png" },
-  { title: "Two Paths", image: "/background.png" },
-  { title: "Flowers", image: "/background.png" },
-  { title: "Grandmother's", image: "/background.png" },
-  { title: "The Rescue", image: "/background.png" },
-  { title: "The End", image: "/background.png" },
+  { title: "Home", image: backgrounds[0] },
+  { title: "The Basket", image: backgrounds[1] },
+  { title: "Into the Woods", image: backgrounds[2] },
+  { title: "The Wolf", image: backgrounds[3] },
+  { title: "A Trick", image: backgrounds[0] },
+  { title: "Two Paths", image: backgrounds[1] },
+  { title: "Flowers", image: backgrounds[2] },
+  { title: "Grandmother's", image: backgrounds[3] },
+  { title: "The Rescue", image: backgrounds[0] },
+  { title: "The End", image: backgrounds[1] },
 ];
 
 // Avatar list for display (derived from characters)
