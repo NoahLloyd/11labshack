@@ -69,6 +69,9 @@ TEACHING APPROACH:
 - Make learning feel natural within the story
 
 TOOL USAGE:
+- show_character: Make a character avatar visible when they first appear in the story
+- show_narration: Display story text on screen as you narrate it
+- request_input: Ask the user for voice input (they hold spacebar to speak)
 - show_graphic: Change to the next scene (1-10) as story progresses
 - show_math: Display a math question related to current scene
 - show_spelling: Show a spelling challenge using story words
@@ -82,10 +85,67 @@ When narrating dialogue, use the change_voice tool to switch voices for immersio
 - Grandmother (elderly, warm): Use "grandmother" voice
 - Narrator/Huntsman/Mother (default): Use "narrator" voice
 
-IMPORTANT: Always call show_graphic when starting a new scene, then introduce teaching activity. Use change_voice before speaking as a character to make dialogue more engaging.`,
+IMPORTANT: Always call show_graphic when starting a new scene. Use show_narration to display story text. Use show_character when a character first appears. Use request_input when you want the student to speak. Use change_voice before speaking as a character.`,
             llm: "gpt-4o-mini",
             temperature: 0.7,
             tools: [
+              {
+                type: "client",
+                name: "show_character",
+                description:
+                  "Make a character avatar visible when they first appear in the story. Call this the first time Red Riding Hood, Grandmother, or the Wolf appear.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    character: {
+                      type: "string",
+                      enum: ["red-riding-hood", "grandmother", "wolf"],
+                      description: "The character that is appearing",
+                    },
+                  },
+                  required: ["character"],
+                },
+                expects_response: false,
+              },
+              {
+                type: "client",
+                name: "show_narration",
+                description:
+                  "Display story text on screen as you narrate it. Use this to show what you are saying so students can read along.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    text: {
+                      type: "string",
+                      description: "The narration text to display",
+                    },
+                    speaker: {
+                      type: "string",
+                      enum: ["narrator", "red-riding-hood", "grandmother", "wolf"],
+                      description: "Who is speaking (defaults to narrator)",
+                    },
+                  },
+                  required: ["text"],
+                },
+                expects_response: false,
+              },
+              {
+                type: "client",
+                name: "request_input",
+                description:
+                  "Ask the user for voice input. They will need to hold down the spacebar to speak. Use this when you want them to make a choice or answer a question.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    prompt: {
+                      type: "string",
+                      description: "The question or prompt for the user",
+                    },
+                  },
+                  required: ["prompt"],
+                },
+                expects_response: false,
+              },
               {
                 type: "client",
                 name: "show_graphic",
