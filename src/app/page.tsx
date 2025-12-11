@@ -9,68 +9,20 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
+import { getAvailableStories } from "@/config/stories";
 
-const stories = [
-  {
-    id: "red-riding-hood",
-    title: "Little Red Riding Hood",
-    author: "Classic Tale",
-    cover: "from-red-500 to-rose-700",
-    accent: "bg-red-500",
-    duration: "15-20 min",
-    age: "4-8",
-    featured: true,
-    description:
-      "A brave girl, a cunning wolf, and a grandmother who needs saving. Make choices that change the story.",
-  },
-  {
-    id: "three-pigs",
-    title: "The Three Little Pigs",
-    author: "Classic Tale",
-    cover: "from-amber-500 to-orange-600",
-    accent: "bg-amber-500",
-    duration: "12-15 min",
-    age: "3-7",
-    featured: false,
-    description:
-      "Build houses, outsmart the wolf, and learn what it takes to stay safe.",
-  },
-  {
-    id: "jack-beanstalk",
-    title: "Jack and the Beanstalk",
-    author: "Classic Tale",
-    cover: "from-emerald-500 to-green-700",
-    accent: "bg-emerald-500",
-    duration: "18-22 min",
-    age: "5-9",
-    featured: false,
-    description:
-      "Climb the magical beanstalk and discover what treasures await in the clouds.",
-  },
-  {
-    id: "goldilocks",
-    title: "Goldilocks",
-    author: "Classic Tale",
-    cover: "from-yellow-400 to-amber-500",
-    accent: "bg-yellow-500",
-    duration: "10-15 min",
-    age: "3-6",
-    featured: false,
-    description: "Explore the bears' house and find out what's just right.",
-  },
-  {
-    id: "hansel-gretel",
-    title: "Hansel & Gretel",
-    author: "Classic Tale",
-    cover: "from-violet-500 to-purple-700",
-    accent: "bg-violet-500",
-    duration: "20-25 min",
-    age: "6-10",
-    featured: false,
-    description:
-      "Navigate the enchanted forest and escape the witch's candy house.",
-  },
-];
+// Load stories from configuration
+const stories = getAvailableStories().map(story => ({
+  id: story.id,
+  title: story.title,
+  author: story.author,
+  cover: story.cover,
+  accent: story.accent,
+  duration: story.duration,
+  age: story.age,
+  featured: story.featured || false,
+  description: story.description,
+}));
 
 export default function Home() {
   const featuredStory = stories.find((s) => s.featured);
@@ -178,7 +130,7 @@ export default function Home() {
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Book Cover */}
                 <div
-                  className={`bg-linear-to-br ${featuredStory.cover} p-12 flex items-center justify-center min-h-[400px] relative overflow-hidden`}
+                  className={`bg-linear-to-br ${featuredStory.cover} p-12 flex items-center justify-center min-h-100 relative overflow-hidden`}
                 >
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-8 left-8 w-32 h-32 border-4 border-white rounded-full" />
