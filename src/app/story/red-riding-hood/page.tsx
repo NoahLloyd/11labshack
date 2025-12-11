@@ -14,30 +14,51 @@ type InteractiveComponent = {
   props?: Record<string, unknown>;
 };
 
-type CharacterId = "red-riding-hood" | "grandmother" | "wolf";
+type CharacterId =
+  | "red-riding-hood"
+  | "grandmother"
+  | "wolf"
+  | "hunter"
+  | "owl";
 type Speaker = "narrator" | CharacterId;
 
 interface CharacterConfig {
   name: string;
-  avatar: string;
-  color: string;
+  png: string;
+  webm: string;
+  fallbackEmoji: string;
 }
 
 const characters: Record<CharacterId, CharacterConfig> = {
   "red-riding-hood": {
-    name: "Little Red Riding Hood",
-    avatar: "🧒",
-    color: "red",
+    name: "Red Riding Hood",
+    png: "/avatars/png/Red riding hood.png",
+    webm: "/avatars/animated/Red Riding Hen animation-no-bg.webm",
+    fallbackEmoji: "🧒",
   },
   grandmother: {
-    name: "Grandmother",
-    avatar: "👵",
-    color: "gray",
+    name: "Grandma",
+    png: "/avatars/png/Grandma.png",
+    webm: "/avatars/animated/Grandma animation-no-bg.webm",
+    fallbackEmoji: "👵",
   },
   wolf: {
-    name: "The Wolf",
-    avatar: "🐺",
-    color: "slate",
+    name: "Wolf",
+    png: "/avatars/png/wolf.png",
+    webm: "/avatars/animated/Wolf animation-no-bg.webm",
+    fallbackEmoji: "🐺",
+  },
+  hunter: {
+    name: "Hunter",
+    png: "/avatars/png/Hunter.png",
+    webm: "/avatars/animated/Hunter animation -no-bg.webm",
+    fallbackEmoji: "🪓",
+  },
+  owl: {
+    name: "Owl",
+    png: "/avatars/png/OWL.png",
+    webm: "/avatars/animated/Narrator OWL animation.webm",
+    fallbackEmoji: "🦉",
   },
 };
 
@@ -53,6 +74,17 @@ const scenes: { title: string; image: string }[] = [
   { title: "The Rescue", image: "/scenes/9.png" },
   { title: "The End", image: "/scenes/10.png" },
 ];
+
+// Avatar list for display (derived from characters)
+const avatarList = Object.values(characters);
+
+// Map backend voice names to frontend CharacterIds
+const voiceToCharacter: Record<string, CharacterId | "narrator"> = {
+  narrator: "owl",
+  red_riding_hood: "red-riding-hood",
+  wolf: "wolf",
+  grandmother: "grandmother",
+};
 
 export default function RedRidingHoodStory() {
   const [agentId, setAgentId] = useState<string | null>(null);
@@ -70,10 +102,13 @@ export default function RedRidingHoodStory() {
 
   // Character avatar state
   const [currentSpeaker, setCurrentSpeaker] = useState<Speaker>("narrator");
-  const [appearedCharacters, setAppearedCharacters] = useState<Set<CharacterId>>(new Set());
+  const [appearedCharacters, setAppearedCharacters] = useState<
+    Set<CharacterId>
+  >(new Set());
   const [storyText, setStoryText] = useState<string>("");
   const [isAwaitingInput, setIsAwaitingInput] = useState(false);
   const [isHoldingSpacebar, setIsHoldingSpacebar] = useState(false);
+  const [isAnimatedMode, setIsAnimatedMode] = useState(false);
 
   const conversationRef = useRef<Conversation | null>(null);
 
@@ -240,6 +275,29 @@ export default function RedRidingHoodStory() {
             });
             setTimeout(() => setComponent({ type: null }), 3000);
           },
+          change_voice: (parameters: { character: string }) => {
+            console.log("change_voice called:", parameters);
+            const mappedCharacter = voiceToCharacter[parameters.character];
+            if (mappedCharacter) {
+              // Enable animated mode when a character speaks
+              setIsAnimatedMode(true);
+              // Set the current speaker (owl maps to narrator for display purposes)
+              if (mappedCharacter === "owl") {
+                setCurrentSpeaker("narrator");
+              } else {
+                setCurrentSpeaker(mappedCharacter as Speaker);
+              }
+              // Mark character as appeared
+              if (
+                mappedCharacter !== "owl" &&
+                characters[mappedCharacter as CharacterId]
+              ) {
+                setAppearedCharacters((prev) =>
+                  new Set(prev).add(mappedCharacter as CharacterId)
+                );
+              }
+            }
+          },
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
@@ -286,8 +344,9 @@ export default function RedRidingHoodStory() {
           {isConnected ? (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className={`p-2 rounded-full ${isMuted ? "text-red-500" : "text-stone-500"
-                }`}
+              className={`p-2 rounded-full ${
+                isMuted ? "text-red-500" : "text-stone-500"
+              }`}
             >
               {isMuted ? (
                 <MicOff className="w-4 h-4" />
@@ -314,27 +373,43 @@ export default function RedRidingHoodStory() {
         {!isConnected ? (
           /* Start Screen */
           <div className="flex-1 flex flex-col items-center justify-center p-6">
-            <div className="w-48 h-48 bg-stone-200 rounded-2xl mb-8 overflow-hidden relative">
-              <Image
-                src="/scenes/cover.png"
-                alt="Little Red Riding Hood"
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                🧒
-              </div>
-            </div>
-            <h1 className="text-xl font-medium text-stone-900 mb-2">
+            <h1 className="text-2xl font-bold text-stone-900 mb-2">
               Little Red Riding Hood
             </h1>
-            <p className="text-stone-500 text-sm mb-8 text-center max-w-xs">
+            <p className="text-stone-500 text-sm mb-6 text-center max-w-xs">
               An interactive story with voice, math challenges, and spelling
               practice.
             </p>
+
+            {/* Character Avatars */}
+            <div className="flex items-end justify-center gap-2 mb-8">
+              {avatarList.map((avatar) => (
+                <div key={avatar.name} className="flex flex-col items-center">
+                  <div className="w-24 h-24 relative">
+                    {isAnimatedMode ? (
+                      <video
+                        src={avatar.webm}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <Image
+                        src={avatar.png}
+                        alt={avatar.name}
+                        fill
+                        className="object-contain"
+                      />
+                    )}
+                  </div>
+                  <span className="text-xs text-stone-600 font-medium">
+                    {avatar.name}
+                  </span>
+                </div>
+              ))}
+            </div>
 
             {showPermissionPrompt && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 max-w-xs">
@@ -406,7 +481,9 @@ export default function RedRidingHoodStory() {
                     ) : (
                       <div className="text-center text-stone-400">
                         <p className="text-sm">
-                          {isSpeaking ? "Listen to the story..." : "Waiting for narration..."}
+                          {isSpeaking
+                            ? "Listen to the story..."
+                            : "Waiting for narration..."}
                         </p>
                       </div>
                     )}
@@ -427,10 +504,11 @@ export default function RedRidingHoodStory() {
                         hold down spacebar to speak
                       </p>
                       <button
-                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${isHoldingSpacebar
-                          ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
-                          : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
-                          }`}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${
+                          isHoldingSpacebar
+                            ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
+                            : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
+                        }`}
                       >
                         {isHoldingSpacebar ? (
                           <>
@@ -481,24 +559,67 @@ export default function RedRidingHoodStory() {
               {/* Right: Character Display */}
               <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col min-h-125">
                 <div
-                  className={`flex-1 p-6 flex flex-col items-center justify-center transition-all ${currentSpeaker === "red-riding-hood"
-                    ? "bg-linear-to-br from-red-400 to-rose-500"
-                    : currentSpeaker === "grandmother"
-                      ? "bg-linear-to-br from-purple-400 to-pink-500"
+                  className={`flex-1 p-6 flex flex-col items-center justify-center transition-all ${
+                    currentSpeaker === "red-riding-hood"
+                      ? "bg-gradient-to-br from-red-400 to-rose-500"
+                      : currentSpeaker === "grandmother"
+                      ? "bg-gradient-to-br from-purple-400 to-pink-500"
                       : currentSpeaker === "wolf"
-                        ? "bg-linear-to-br from-slate-600 to-gray-700"
-                        : "bg-linear-to-br from-amber-200 to-orange-300"
-                    }`}
+                      ? "bg-gradient-to-br from-slate-600 to-gray-700"
+                      : currentSpeaker === "hunter"
+                      ? "bg-gradient-to-br from-green-500 to-emerald-600"
+                      : currentSpeaker === "owl"
+                      ? "bg-gradient-to-br from-amber-400 to-yellow-500"
+                      : "bg-gradient-to-br from-amber-200 to-orange-300"
+                  }`}
                 >
-                  <div className="text-8xl mb-4">
-                    {currentSpeaker === "narrator"
-                      ? "📖"
-                      : characters[currentSpeaker as CharacterId]?.avatar}
+                  <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white/20 mb-4 relative shadow-xl">
+                    {currentSpeaker === "narrator" ? (
+                      // Narrator uses Owl avatar
+                      isAnimatedMode ? (
+                        <video
+                          src={characters.owl.webm}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Image
+                          src={characters.owl.png}
+                          alt="Narrator (Owl)"
+                          fill
+                          className="object-cover"
+                        />
+                      )
+                    ) : isAnimatedMode ? (
+                      <video
+                        src={characters[currentSpeaker as CharacterId]?.webm}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={
+                          characters[currentSpeaker as CharacterId]?.png || ""
+                        }
+                        alt={
+                          characters[currentSpeaker as CharacterId]?.name ||
+                          "Character"
+                        }
+                        fill
+                        className="object-cover"
+                      />
+                    )}
                   </div>
                   <div className="bg-white rounded-xl px-4 py-2 shadow-lg">
                     <p className="font-bold text-stone-900 text-lg">
                       {currentSpeaker === "narrator"
-                        ? "Narrator"
+                        ? "Narrator (Owl)"
                         : characters[currentSpeaker as CharacterId]?.name}
                     </p>
                   </div>
@@ -510,12 +631,13 @@ export default function RedRidingHoodStory() {
                     {[...Array(10)].map((_, i) => (
                       <div
                         key={i}
-                        className={`w-2.5 h-2.5 rounded-full transition-colors ${i + 1 === currentScene
-                          ? "bg-red-500"
-                          : i + 1 < currentScene
+                        className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                          i + 1 === currentScene
+                            ? "bg-red-500"
+                            : i + 1 < currentScene
                             ? "bg-red-300"
                             : "bg-stone-200"
-                          }`}
+                        }`}
                       />
                     ))}
                   </div>
@@ -528,7 +650,7 @@ export default function RedRidingHoodStory() {
 
             {/* Bottom: Character Avatars */}
             <div className="bg-white border-t border-stone-200 p-4">
-              <div className="flex items-center justify-center gap-6 mb-3">
+              <div className="flex items-center justify-center gap-4 mb-3">
                 {(Object.keys(characters) as CharacterId[]).map((charId) => {
                   const char = characters[charId];
                   const isActive = currentSpeaker === charId;
@@ -537,20 +659,39 @@ export default function RedRidingHoodStory() {
                   return (
                     <div
                       key={charId}
-                      className={`flex flex-col items-center transition-all ${hasAppeared ? "opacity-100" : "opacity-30"
-                        }`}
+                      className={`flex flex-col items-center transition-all ${
+                        hasAppeared ? "opacity-100" : "opacity-30"
+                      }`}
                     >
                       <div
-                        className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl transition-all ${isActive
-                          ? "ring-4 ring-yellow-400 scale-110 shadow-lg bg-linear-to-br from-yellow-100 to-amber-100"
-                          : "ring-2 ring-stone-200 bg-stone-100"
-                          }`}
+                        className={`w-12 h-12 rounded-full overflow-hidden relative transition-all ${
+                          isActive
+                            ? "ring-4 ring-yellow-400 scale-110 shadow-lg"
+                            : "ring-2 ring-stone-200"
+                        }`}
                       >
-                        {char.avatar}
+                        {isAnimatedMode ? (
+                          <video
+                            src={char.webm}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Image
+                            src={char.png}
+                            alt={char.name}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
                       </div>
                       <p
-                        className={`text-xs font-medium mt-1 ${isActive ? "text-stone-900" : "text-stone-500"
-                          }`}
+                        className={`text-xs font-medium mt-1 ${
+                          isActive ? "text-stone-900" : "text-stone-500"
+                        }`}
                       >
                         {char.name.split(" ")[0]}
                       </p>
