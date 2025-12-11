@@ -63,16 +63,16 @@ const characters: Record<CharacterId, CharacterConfig> = {
 };
 
 const scenes: { title: string; image: string }[] = [
-  { title: "Home", image: "/scenes/1.png" },
-  { title: "The Basket", image: "/scenes/2.png" },
-  { title: "Into the Woods", image: "/scenes/3.png" },
-  { title: "The Wolf", image: "/scenes/4.png" },
-  { title: "A Trick", image: "/scenes/5.png" },
-  { title: "Two Paths", image: "/scenes/6.png" },
-  { title: "Flowers", image: "/scenes/7.png" },
-  { title: "Grandmother's", image: "/scenes/8.png" },
-  { title: "The Rescue", image: "/scenes/9.png" },
-  { title: "The End", image: "/scenes/10.png" },
+  { title: "Home", image: "/background.png" },
+  { title: "The Basket", image: "/background.png" },
+  { title: "Into the Woods", image: "/background.png" },
+  { title: "The Wolf", image: "/background.png" },
+  { title: "A Trick", image: "/background.png" },
+  { title: "Two Paths", image: "/background.png" },
+  { title: "Flowers", image: "/background.png" },
+  { title: "Grandmother's", image: "/background.png" },
+  { title: "The Rescue", image: "/background.png" },
+  { title: "The End", image: "/background.png" },
 ];
 
 // Avatar list for display (derived from characters)
@@ -463,123 +463,131 @@ export default function RedRidingHoodStory() {
             )}
           </div>
         ) : (
-          /* Story Experience */
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 grid lg:grid-cols-2 gap-4 p-4">
-              {/* Left: Story Narration / Activities */}
-              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 flex flex-col min-h-125">
-                {/* Story Narration */}
-                {component.type === null && !isAwaitingInput && (
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="text-center mb-4">
-                      <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full mb-3">
-                        <span className="text-2xl">📖</span>
-                      </div>
-                    </div>
-                    {storyText ? (
-                      <div className="text-center">
-                        <p className="text-lg text-stone-700 leading-relaxed">
-                          {storyText}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-center text-stone-400">
-                        <p className="text-sm">
-                          {isSpeaking
-                            ? "Listen to the story..."
-                            : "Waiting for narration..."}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+          /* Story Experience - Full Screen with Background */
+          <div className="flex-1 relative">
+            {/* Background Scene Image */}
+            <div className="absolute inset-0">
+              <Image
+                src={scene.image}
+                alt={scene.title}
+                fill
+                className="object-cover"
+                priority
+              />
+              {/* Overlay for readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+            </div>
 
-                {/* User Input Mode */}
-                {isAwaitingInput && (
-                  <div className="flex-1 flex flex-col justify-center items-center text-center">
-                    <div className="mb-6">
-                      <div className="text-5xl mb-4">🎤</div>
-                      <h3 className="text-xl font-bold text-stone-900 mb-3">
-                        {storyText || "Your turn to speak!"}
-                      </h3>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <p className="text-xs text-stone-500">
-                        hold down spacebar to speak
-                      </p>
-                      <button
-                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${
-                          isHoldingSpacebar
-                            ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
-                            : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
+            {/* Content Overlay */}
+            <div className="relative z-10 h-full flex flex-col">
+              {/* Top: Scene Title */}
+              <div className="p-4">
+                <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                  <div className="flex gap-1">
+                    {[...Array(10)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${
+                          i + 1 === currentScene
+                            ? "bg-red-500"
+                            : i + 1 < currentScene
+                            ? "bg-red-300"
+                            : "bg-stone-300"
                         }`}
-                      >
-                        {isHoldingSpacebar ? (
-                          <>
-                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                            Recording...
-                          </>
-                        ) : (
-                          <>spacebar</>
-                        )}
-                      </button>
-                    </div>
+                      />
+                    ))}
                   </div>
-                )}
-
-                {/* Activities */}
-                {component.type === "math" && component.props && (
-                  <div className="flex-1 flex items-center justify-center">
-                    <MathQuestion
-                      question={component.props.question as string}
-                      answer={component.props.answer as number}
-                      hint={component.props.hint as string | undefined}
-                      onComplete={
-                        component.props.onComplete as (correct: boolean) => void
-                      }
-                    />
-                  </div>
-                )}
-                {component.type === "spelling" && component.props && (
-                  <div className="flex-1 flex items-center justify-center">
-                    <SpellingChallenge
-                      word={component.props.word as string}
-                      context={component.props.context as string}
-                      onComplete={
-                        component.props.onComplete as (correct: boolean) => void
-                      }
-                    />
-                  </div>
-                )}
-                {component.type === "completion" && component.props && (
-                  <div className="flex-1 flex items-center justify-center">
-                    <CompletionMessage
-                      message={component.props.message as string}
-                    />
-                  </div>
-                )}
+                  <span className="text-sm font-medium text-stone-700">
+                    {scene.title}
+                  </span>
+                </div>
               </div>
 
-              {/* Right: Character Display */}
-              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col min-h-125">
-                <div
-                  className={`flex-1 p-6 flex flex-col items-center justify-center transition-all ${
-                    currentSpeaker === "red-riding-hood"
-                      ? "bg-gradient-to-br from-red-400 to-rose-500"
-                      : currentSpeaker === "grandmother"
-                      ? "bg-gradient-to-br from-purple-400 to-pink-500"
-                      : currentSpeaker === "wolf"
-                      ? "bg-gradient-to-br from-slate-600 to-gray-700"
-                      : currentSpeaker === "hunter"
-                      ? "bg-gradient-to-br from-green-500 to-emerald-600"
-                      : currentSpeaker === "owl"
-                      ? "bg-gradient-to-br from-amber-400 to-yellow-500"
-                      : "bg-gradient-to-br from-amber-200 to-orange-300"
-                  }`}
-                >
-                  <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white/20 mb-4 relative shadow-xl">
+              {/* Main Content Area */}
+              <div className="flex-1 flex items-center justify-between p-6 gap-6">
+                {/* Left: Story Text / Activities */}
+                <div className="flex-1 max-w-md">
+                  {/* Story Narration */}
+                  {component.type === null && !isAwaitingInput && storyText && (
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+                      <p className="text-lg text-stone-800 leading-relaxed">
+                        {storyText}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* User Input Mode */}
+                  {isAwaitingInput && (
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+                      <p className="text-lg text-stone-800 mb-4">
+                        {storyText || "Your turn to speak!"}
+                      </p>
+                      <div className="flex flex-col items-center gap-2">
+                        <p className="text-xs text-stone-500">
+                          hold down spacebar to speak
+                        </p>
+                        <button
+                          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${
+                            isHoldingSpacebar
+                              ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
+                              : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
+                          }`}
+                        >
+                          {isHoldingSpacebar ? (
+                            <>
+                              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                              Recording...
+                            </>
+                          ) : (
+                            <>spacebar</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Activities */}
+                  {component.type === "math" && component.props && (
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+                      <MathQuestion
+                        question={component.props.question as string}
+                        answer={component.props.answer as number}
+                        hint={component.props.hint as string | undefined}
+                        onComplete={
+                          component.props.onComplete as (
+                            correct: boolean
+                          ) => void
+                        }
+                      />
+                    </div>
+                  )}
+                  {component.type === "spelling" && component.props && (
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+                      <SpellingChallenge
+                        word={component.props.word as string}
+                        context={component.props.context as string}
+                        onComplete={
+                          component.props.onComplete as (
+                            correct: boolean
+                          ) => void
+                        }
+                      />
+                    </div>
+                  )}
+                  {component.type === "completion" && component.props && (
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+                      <CompletionMessage
+                        message={component.props.message as string}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: Character Avatar */}
+                <div className="flex flex-col items-center">
+                  {/* Character Display */}
+                  <div className="w-48 h-48 relative mb-2">
                     {currentSpeaker === "narrator" ? (
-                      // Narrator uses Owl avatar
                       isAnimatedMode ? (
                         <video
                           src={characters.owl.webm}
@@ -587,14 +595,14 @@ export default function RedRidingHoodStory() {
                           loop
                           muted
                           playsInline
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain drop-shadow-2xl"
                         />
                       ) : (
                         <Image
                           src={characters.owl.png}
                           alt="Narrator (Owl)"
                           fill
-                          className="object-cover"
+                          className="object-contain drop-shadow-2xl"
                         />
                       )
                     ) : isAnimatedMode ? (
@@ -604,7 +612,7 @@ export default function RedRidingHoodStory() {
                         loop
                         muted
                         playsInline
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain drop-shadow-2xl"
                       />
                     ) : (
                       <Image
@@ -616,115 +624,82 @@ export default function RedRidingHoodStory() {
                           "Character"
                         }
                         fill
-                        className="object-cover"
+                        className="object-contain drop-shadow-2xl"
                       />
                     )}
                   </div>
-                  <div className="bg-white rounded-xl px-4 py-2 shadow-lg">
-                    <p className="font-bold text-stone-900 text-lg">
+                  {/* Character Name Badge */}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-lg">
+                    <p className="font-bold text-stone-800 text-sm">
                       {currentSpeaker === "narrator"
-                        ? "Narrator (Owl)"
+                        ? "Narrator"
                         : characters[currentSpeaker as CharacterId]?.name}
                     </p>
                   </div>
-                </div>
-
-                {/* Scene Progress */}
-                <div className="p-4 bg-stone-50">
-                  <div className="flex justify-center gap-1.5 mb-2">
-                    {[...Array(10)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                          i + 1 === currentScene
-                            ? "bg-red-500"
-                            : i + 1 < currentScene
-                            ? "bg-red-300"
-                            : "bg-stone-200"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-center text-xs text-stone-600">
-                    Scene {currentScene}/10 · {scene.title}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom: Character Avatars */}
-            <div className="bg-white border-t border-stone-200 p-4">
-              <div className="flex items-center justify-center gap-4 mb-3">
-                {(Object.keys(characters) as CharacterId[]).map((charId) => {
-                  const char = characters[charId];
-                  const isActive = currentSpeaker === charId;
-                  const hasAppeared = appearedCharacters.has(charId);
-
-                  return (
-                    <div
-                      key={charId}
-                      className={`flex flex-col items-center transition-all ${
-                        hasAppeared ? "opacity-100" : "opacity-30"
-                      }`}
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-full overflow-hidden relative transition-all ${
-                          isActive
-                            ? "ring-4 ring-yellow-400 scale-110 shadow-lg"
-                            : "ring-2 ring-stone-200"
-                        }`}
-                      >
-                        {isAnimatedMode ? (
-                          <video
-                            src={char.webm}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Image
-                            src={char.png}
-                            alt={char.name}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
-                      </div>
-                      <p
-                        className={`text-xs font-medium mt-1 ${
-                          isActive ? "text-stone-900" : "text-stone-500"
-                        }`}
-                      >
-                        {char.name.split(" ")[0]}
-                      </p>
-                      {isActive && (
-                        <div className="mt-0.5 px-1.5 py-0.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold rounded-full">
-                          Speaking
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center justify-center gap-3">
-                <div className="flex items-center gap-2 text-xs text-stone-500">
                   {isSpeaking && (
-                    <>
+                    <div className="mt-2 flex items-center gap-1 text-white text-xs">
                       <Volume2 className="w-3 h-3 animate-pulse" />
-                      <span>Listening</span>
-                    </>
+                      <span>Speaking...</span>
+                    </div>
                   )}
                 </div>
-                <button
-                  onClick={endConversation}
-                  className="text-xs text-stone-400 hover:text-stone-600 underline"
-                >
-                  End story
-                </button>
+              </div>
+
+              {/* Bottom: Character Avatars */}
+              <div className="p-4">
+                <div className="flex items-center justify-center gap-4">
+                  {(
+                    ["red-riding-hood", "wolf", "grandmother"] as CharacterId[]
+                  ).map((charId) => {
+                    const char = characters[charId];
+                    const isActive = currentSpeaker === charId;
+                    const hasAppeared = appearedCharacters.has(charId);
+
+                    return (
+                      <div
+                        key={charId}
+                        className={`transition-all ${
+                          hasAppeared ? "opacity-100" : "opacity-40"
+                        }`}
+                      >
+                        <div
+                          className={`w-16 h-16 rounded-full overflow-hidden relative transition-all bg-white/20 backdrop-blur-sm ${
+                            isActive
+                              ? "ring-4 ring-yellow-400 scale-110 shadow-xl"
+                              : "ring-2 ring-white/50"
+                          }`}
+                        >
+                          {isAnimatedMode && isActive ? (
+                            <video
+                              src={char.webm}
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={char.png}
+                              alt={char.name}
+                              fill
+                              className="object-cover"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* End Button */}
+                <div className="flex justify-center mt-3">
+                  <button
+                    onClick={endConversation}
+                    className="text-xs text-white/70 hover:text-white underline"
+                  >
+                    End story
+                  </button>
+                </div>
               </div>
             </div>
           </div>
