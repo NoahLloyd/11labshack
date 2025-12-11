@@ -54,7 +54,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_character",
                 description:
-                  "Make a character avatar visible when they first appear in the story. Call this the first time Red Riding Hood, Grandmother, or the Wolf appear.",
+                  "REQUIRED: Call this immediately when a character (Red Riding Hood, Wolf, or Grandmother) first appears in the scene to show their avatar.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_narration",
                 description:
-                  "Display story text on screen as you narrate it. Use this to show what you are saying so students can read along.",
+                  "REQUIRED: Display text on screen while you speak. Call this EVERY time you narrate story text so students can read along.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_graphic",
                 description:
-                  "Display a story scene graphic. Use this to progress through the visual story (scenes 1-10).",
+                  "CRITICAL: Call this IMMEDIATELY when transitioning to a new scene (1-10). Scene 2 shows Pack Basket interactive component, Scene 6 shows Forest Paths interactive component. Always call this before narrating each scene.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_math",
                 description:
-                  "Display an interactive math question for the student to solve.",
+                  "INTERACTIVE: Display a math question for the student to solve. Use this frequently throughout the story - at least once every 2-3 scenes. Make questions simple and story-related.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -163,7 +163,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_spelling",
                 description:
-                  "Display a spelling challenge for a word from the story.",
+                  "INTERACTIVE: Display a spelling challenge for the student. Use this frequently - at least once every 2-3 scenes. Use simple story-related words like 'wolf', 'basket', 'path', 'grandma'.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "change_voice",
                 description:
-                  "Change the narrator voice to match the character who is speaking. Use this before speaking dialogue to make the story more immersive.",
+                  "REQUIRED: Call this BEFORE speaking character dialogue to switch voices. Use 'narrator' for narration, 'red_riding_hood' for Red, 'wolf' for Wolf, 'grandmother' for Grandma. This makes the story immersive.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -230,6 +230,10 @@ export async function POST(request: Request) {
           stability: storyConfig.narratorVoice.stability || 0.5,
           similarity_boost: storyConfig.narratorVoice.similarity_boost || 0.75,
           supported_voices: supportedVoices,
+        },
+        turn: {
+          mode: "turn",
+          turn_eagerness: "patient",
         },
       },
       name: `${storyConfig.title} Teacher`,

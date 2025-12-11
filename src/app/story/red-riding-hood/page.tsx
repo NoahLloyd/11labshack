@@ -8,6 +8,9 @@ import Image from "next/image";
 import MathQuestion from "@/components/MathQuestion";
 import SpellingChallenge from "@/components/SpellingChallenge";
 import CompletionMessage from "@/components/CompletionMessage";
+import ForestPaths from "@/components/ForestPaths";
+import PackBasket from "@/components/PackBasket";
+import { getStoryById } from "@/config/stories";
 
 type InteractiveComponent = {
   type: "math" | "spelling" | "completion" | null;
@@ -62,26 +65,9 @@ const characters: Record<CharacterId, CharacterConfig> = {
   },
 };
 
-// Available backgrounds (will loop through these)
-const backgrounds = [
-  "/background.png", // 1: Forest path scene
-  "/scenes/opening.jpeg", // 2: Opening scene
-  "/scenes/at_home.jpeg", // 3: At home scene
-  "/scenes/goodbye.jpeg", // 4: Goodbye scene
-];
-
-const scenes: { title: string; image: string }[] = [
-  { title: "Home", image: backgrounds[0] },
-  { title: "The Basket", image: backgrounds[1] },
-  { title: "Into the Woods", image: backgrounds[2] },
-  { title: "The Wolf", image: backgrounds[3] },
-  { title: "A Trick", image: backgrounds[0] },
-  { title: "Two Paths", image: backgrounds[1] },
-  { title: "Flowers", image: backgrounds[2] },
-  { title: "Grandmother's", image: backgrounds[3] },
-  { title: "The Rescue", image: backgrounds[0] },
-  { title: "The End", image: backgrounds[1] },
-];
+// Load scenes from story configuration
+const storyConfig = getStoryById("red-riding-hood");
+const scenes = storyConfig?.scenes || [];
 
 // Avatar list for display (derived from characters)
 const avatarList = Object.values(characters);
@@ -203,27 +189,48 @@ export default function RedRidingHoodStory() {
       setIsLoading(true);
       const conv = await Conversation.startSession({
         agentId,
-        onConnect: () => setIsConnected(true),
-        onDisconnect: () => setIsConnected(false),
+        connectionType: "websocket",
+        onConnect: () => {
+          console.log("Connected to agent");
+          setIsConnected(true);
+        },
+        onDisconnect: () => {
+          console.log("Disconnected from agent");
+          setIsConnected(false);
+        },
         onError: (error: string) => {
           console.error("Conversation error:", error);
           setError("Connection error");
         },
+        onMessage: (message: string) => {
+          console.log("Message received:", message);
+        },
         onModeChange: (mode: { mode: string }) => {
+          console.log("Mode changed:", mode);
           setIsSpeaking(mode.mode === "speaking");
         },
         clientTools: {
           show_character: (parameters: { character: string }) => {
-            console.log("show_character called:", parameters);
+            console.log("🎭 [TOOL] show_character called:", parameters);
             const charId = parameters.character as CharacterId;
             if (charId && characters[charId]) {
-              setAppearedCharacters((prev) => new Set(prev).add(charId));
+              setAppearedCharacters((prev) => {
+                const newSet = new Set(prev).add(charId);
+                console.log("✅ Character appeared:", charId, "All:", Array.from(newSet));
+                return newSet;
+              });
+            } else {
+              console.warn("⚠️ Unknown character ID:", charId);
             }
           },
           show_narration: (parameters: { text: string; speaker?: string }) => {
-            console.log("show_narration called:", parameters);
+            console.log("📖 [TOOL] show_narration called:", {
+              text: parameters.text.substring(0, 50) + "...",
+              speaker: parameters.speaker,
+            });
             setStoryText(parameters.text);
             if (parameters.speaker) {
+              console.log("🗣️ Setting speaker to:", parameters.speaker);
               setCurrentSpeaker(parameters.speaker as Speaker);
             }
             setComponent({ type: null });
@@ -235,16 +242,18 @@ export default function RedRidingHoodStory() {
             setIsAwaitingInput(true);
             setComponent({ type: null });
           },
-          show_graphic: (parameters: { scene: number }) => {
-            console.log("show_graphic called:", parameters);
-            setCurrentScene(parameters.scene || 1);
+          show_graphic: (parameters: { scene: number; description?: string }) => {
+            console.log("🎬 [TOOL] show_graphic called:", parameters);
+            const sceneNum = parameters.scene || 1;
+            console.log(`📍 Transitioning to Scene ${sceneNum}/10:`, scenes[sceneNum - 1]?.title);
+            setCurrentScene(sceneNum);
           },
           show_math: async (parameters: {
             question: string;
             answer: number;
             hint?: string;
           }) => {
-            console.log("show_math called:", parameters);
+            console.log("🔢 [TOOL] show_math called:", parameters);
             return new Promise<string>((resolve) => {
               setComponent({
                 type: "math",
@@ -253,6 +262,7 @@ export default function RedRidingHoodStory() {
                   answer: parameters.answer,
                   hint: parameters.hint,
                   onComplete: (correct: boolean) => {
+                    console.log("✅ Math completed:", correct ? "CORRECT" : "INCORRECT");
                     setComponent({ type: null });
                     resolve(JSON.stringify({ correct }));
                   },
@@ -264,7 +274,7 @@ export default function RedRidingHoodStory() {
             word: string;
             context: string;
           }) => {
-            console.log("show_spelling called:", parameters);
+            console.log("🔤 [TOOL] show_spelling called:", parameters);
             return new Promise<string>((resolve) => {
               setComponent({
                 type: "spelling",
@@ -272,6 +282,7 @@ export default function RedRidingHoodStory() {
                   word: parameters.word,
                   context: parameters.context,
                   onComplete: (correct: boolean) => {
+                    console.log("✅ Spelling completed:", correct ? "CORRECT" : "INCORRECT");
                     setComponent({ type: null });
                     resolve(JSON.stringify({ correct }));
                   },
@@ -288,26 +299,31 @@ export default function RedRidingHoodStory() {
             setTimeout(() => setComponent({ type: null }), 3000);
           },
           change_voice: (parameters: { character: string }) => {
-            console.log("change_voice called:", parameters);
-            const mappedCharacter = voiceToCharacter[parameters.character];
-            if (mappedCharacter) {
-              // Enable animated mode when a character speaks
+            console.log("🎤 [TOOL] change_voice called:", parameters);
+            const voiceChar = parameters.character;
+
+            // Map voice labels to display characters
+            if (voiceChar === "narrator") {
+              console.log("🦉 Switching to NARRATOR voice");
+              setCurrentSpeaker("narrator");
               setIsAnimatedMode(true);
-              // Set the current speaker (owl maps to narrator for display purposes)
-              if (mappedCharacter === "owl") {
-                setCurrentSpeaker("narrator");
-              } else {
-                setCurrentSpeaker(mappedCharacter as Speaker);
-              }
-              // Mark character as appeared
-              if (
-                mappedCharacter !== "owl" &&
-                characters[mappedCharacter as CharacterId]
-              ) {
-                setAppearedCharacters((prev) =>
-                  new Set(prev).add(mappedCharacter as CharacterId)
-                );
-              }
+            } else if (voiceChar === "red_riding_hood") {
+              console.log("👧 Switching to RED RIDING HOOD voice");
+              setCurrentSpeaker("red-riding-hood");
+              setIsAnimatedMode(true);
+              setAppearedCharacters((prev) => new Set(prev).add("red-riding-hood"));
+            } else if (voiceChar === "wolf") {
+              console.log("🐺 Switching to WOLF voice");
+              setCurrentSpeaker("wolf");
+              setIsAnimatedMode(true);
+              setAppearedCharacters((prev) => new Set(prev).add("wolf"));
+            } else if (voiceChar === "grandmother") {
+              console.log("👵 Switching to GRANDMOTHER voice");
+              setCurrentSpeaker("grandmother");
+              setIsAnimatedMode(true);
+              setAppearedCharacters((prev) => new Set(prev).add("grandmother"));
+            } else {
+              console.warn("⚠️ Unknown voice character:", voiceChar);
             }
           },
         },
@@ -356,9 +372,8 @@ export default function RedRidingHoodStory() {
           {isConnected ? (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className={`p-2 rounded-full ${
-                isMuted ? "text-red-500" : "text-stone-500"
-              }`}
+              className={`p-2 rounded-full ${isMuted ? "text-red-500" : "text-stone-500"
+                }`}
             >
               {isMuted ? (
                 <MicOff className="w-4 h-4" />
@@ -473,17 +488,31 @@ export default function RedRidingHoodStory() {
         ) : (
           /* Story Experience - Full Screen with Background */
           <div className="flex-1 relative">
-            {/* Background Scene Image */}
+            {/* Background Scene Image or Component */}
             <div className="absolute inset-0">
-              <Image
-                src={scene.image}
-                alt={scene.title}
-                fill
-                className="object-cover"
-                priority
-              />
-              {/* Overlay for readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+              {scene.component === "forest-paths" ? (
+                <div className="w-full h-full flex items-center justify-center bg-stone-100">
+                  <ForestPaths />
+                </div>
+              ) : scene.component === "pack-basket" ? (
+                <div className="w-full h-full flex items-center justify-center bg-stone-100">
+                  <PackBasket />
+                </div>
+              ) : scene.image ? (
+                <>
+                  <Image
+                    src={scene.image}
+                    alt={scene.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  {/* Overlay for readability */}
+                  <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-black/20" />
+                </>
+              ) : (
+                <div className="w-full h-full bg-linear-to-br from-amber-200 to-orange-300" />
+              )}
             </div>
 
             {/* Content Overlay */}
@@ -495,13 +524,12 @@ export default function RedRidingHoodStory() {
                     {[...Array(10)].map((_, i) => (
                       <div
                         key={i}
-                        className={`w-2 h-2 rounded-full ${
-                          i + 1 === currentScene
-                            ? "bg-red-500"
-                            : i + 1 < currentScene
+                        className={`w-2 h-2 rounded-full ${i + 1 === currentScene
+                          ? "bg-red-500"
+                          : i + 1 < currentScene
                             ? "bg-red-300"
                             : "bg-stone-300"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -535,11 +563,10 @@ export default function RedRidingHoodStory() {
                           hold down spacebar to speak
                         </p>
                         <button
-                          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${
-                            isHoldingSpacebar
-                              ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
-                              : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
-                          }`}
+                          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${isHoldingSpacebar
+                            ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
+                            : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
+                            }`}
                         >
                           {isHoldingSpacebar ? (
                             <>
@@ -666,16 +693,14 @@ export default function RedRidingHoodStory() {
                     return (
                       <div
                         key={charId}
-                        className={`transition-all ${
-                          hasAppeared ? "opacity-100" : "opacity-40"
-                        }`}
+                        className={`transition-all ${hasAppeared ? "opacity-100" : "opacity-40"
+                          }`}
                       >
                         <div
-                          className={`w-16 h-16 rounded-full overflow-hidden relative transition-all bg-white/20 backdrop-blur-sm ${
-                            isActive
-                              ? "ring-4 ring-yellow-400 scale-110 shadow-xl"
-                              : "ring-2 ring-white/50"
-                          }`}
+                          className={`w-16 h-16 rounded-full overflow-hidden relative transition-all bg-white/20 backdrop-blur-sm ${isActive
+                            ? "ring-4 ring-yellow-400 scale-110 shadow-xl"
+                            : "ring-2 ring-white/50"
+                            }`}
                         >
                           {isAnimatedMode && isActive ? (
                             <video

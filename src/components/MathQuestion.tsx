@@ -38,7 +38,7 @@ export default function MathQuestion({
         type="number"
         value={userAnswer}
         onChange={(e) => setUserAnswer(e.target.value)}
-        className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:border-stone-500 focus:ring-0 outline-none mb-2"
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 bg-white focus:border-stone-500 focus:ring-0 outline-none mb-2"
         placeholder="Answer"
         disabled={feedback === "correct"}
       />

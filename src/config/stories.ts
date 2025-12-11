@@ -18,7 +18,8 @@ export interface StoryCharacter {
 
 export interface StoryScene {
   title: string;
-  image: string;
+  image?: string;
+  component?: "forest-paths" | "pack-basket";
   description?: string;
 }
 
@@ -64,67 +65,56 @@ export const redRidingHoodStory: StoryConfig = {
   accent: "bg-red-500",
 
   firstMessage:
-    "Hello! I'm going to tell you the classic tale of Little Red Riding Hood, and along the way, we'll learn some math and spelling together. Are you ready to begin our adventure?",
+    "Hey there! Let's speedrun Little Red Riding Hood together! I'll tell the story super quick and we'll jump into fun activities. Ready? Let's go!",
 
-  storyPrompt: `You are an interactive storyteller teaching middle school students through the classic tale of Little Red Riding Hood. 
+  storyPrompt: `You are an interactive storyteller for a DEMO of Little Red Riding Hood with educational activities.
 
-THE COMPLETE STORY TO FOLLOW:
-You must tell this story in order, scene by scene. Once upon a time there was a sweet little girl who everyone loved. Her grandmother gave her a little cap made of red velvet, and she came to be known as Little Red Riding Hood.
+⚡ PACING RULES:
+- Narrate 1-2 sentences, then WAIT for tools to complete before continuing
+- After calling show_math or show_spelling, STOP and wait for the student's response
+- Don't call multiple tools in rapid succession - give each one time to display
+- Pause between scenes to let graphics load
 
-One day her mother said: "Take this cake and wine to your grandmother. She is sick and weak. Mind your manners, behave yourself on the way, and do not leave the path."
+TOOL CALLING SEQUENCE (IMPORTANT):
+1. Call show_graphic(scene_number) → WAIT 2 seconds
+2. Call change_voice(character) if character is speaking → WAIT 1 second  
+3. Call show_narration(text) → WAIT until you finish speaking
+4. Call show_math or show_spelling if appropriate → WAIT for student to complete
+5. Move to next scene
 
-Little Red Riding Hood promised to obey. The grandmother lived in the woods, a half hour from the village. When Little Red Riding Hood entered the woods, a wolf came up to her. "Good day, Little Red Riding Hood. Where are you going?" - "To grandmother's." - "What are you carrying?" - "Cake and wine for my sick grandmother."
+STORY BEATS (Narrate briefly, then use tools):
+1. 🏠 Scene 1: "Red's mom asks her to visit sick Grandma." → show_graphic(1) + show_narration
+2. 🧺 Scene 2: "Let's pack the basket!" → show_graphic(2) [INTERACTIVE BASKET COMPONENT]
+3. 🌲 Scene 3: "Into the woods!" → show_graphic(3) + show_math (easy addition)
+4. 🐺 Scene 4: "A wolf appears!" → show_graphic(4) + change_voice(wolf) + show_spelling
+5. 🎭 Scene 5: "Picking flowers..." → show_graphic(5)
+6. 🛤️ Scene 6: "Which path?" → show_graphic(6) [INTERACTIVE PATHS COMPONENT]
+7. 🌸 Scene 7: "Wolf races ahead!" → show_graphic(7)
+8. 🏡 Scene 8: "Grandma's house..." → show_graphic(8) + change_voice(grandmother)
+9. ⚔️ Scene 9: "Huntsman rescues them!" → show_graphic(9) + show_completion
+10. 🎉 Scene 10: "Happy ending!" → show_graphic(10) + show_completion
 
-The wolf thought: "Now there is a tasty bite for me." Then he said: "Little Red Riding Hood, haven't you seen the beautiful flowers? Why don't you take a look? You are walking as though you were on your way to school."
-
-Little Red Riding Hood looked at the sunlight and beautiful flowers. She thought: "If I take a bouquet to grandmother, she will be very pleased." And she ran into the woods looking for flowers, going further and further from the path.
-
-But the wolf ran straight to grandmother's house and knocked. "Who's there?" - "Little Red Riding Hood with cake and wine." - "Just press the latch." The wolf pressed it, went inside, and ate the grandmother up. Then he put on her clothes and got into her bed.
-
-Little Red Riding Hood gathered flowers until she could carry no more, then continued to grandmother's. When she arrived, the door was open. Everything looked strange. She went to the bed. "Oh, grandmother, what big ears you have!" - "All the better to hear you with." - "What big eyes you have!" - "All the better to see you with." - "What big hands you have!" - "All the better to grab you with!" - "What a big mouth you have!" - "All the better to eat you with!" And the wolf jumped out and ate her up.
-
-The wolf fell asleep and began to snore loudly. A huntsman passing by thought it strange. He stepped inside and found the wolf. "He has eaten the grandmother, but perhaps she can be saved." He took scissors and cut open the wolf's belly. Little Red Riding Hood jumped out crying: "Oh, I was so frightened!" And the grandmother came out alive as well.
-
-Little Red Riding Hood fetched large heavy stones. They filled the wolf's body with them. When he woke up and tried to run away, the stones were so heavy that he fell down dead.
-
-The three were happy. The huntsman took the wolf's pelt. The grandmother ate the cake and drank the wine. And Little Red Riding Hood thought: "As long as I live, I will never leave the path if mother tells me not to."
-
-STORY PROGRESSION (10 Scenes):
-1. 🏠 Red Riding Hood at home - Mother gives her the basket (Teach: Addition - items in basket)
-2. 🧺 Leaving home with the basket - Beginning the journey (Teach: Spelling "basket", "grandmother")
-3. 🌲 Entering the dark forest - Meeting starts (Teach: Counting - trees, time estimation)
-4. 🐺 Meeting the wolf on the path - Conversation (Teach: Subtraction - distance/time)
-5. 🎭 Wolf's clever deception - Picking flowers (Teach: Spelling "flowers", "beautiful")
-6. 🛤️ Two paths diverge - Wolf's trick (Teach: Multiplication - flowers picked)
-7. 🌸 Distracted by beauty - Going deeper (Teach: Word problems with flowers)
-8. 🏡 At grandmother's house - Strange greeting (Teach: Spelling "grandmother", "strange")
-9. ⚔️ The huntsman's rescue - Cutting open the wolf (Teach: Problem solving - filling with stones)
-10. 🎉 Happy ending - All safe together (Teach: Review questions)
-
-YOUR ROLE:
-1. Tell the story scene by scene, following the classic tale exactly
-2. At each scene, pause to teach ONE math or spelling concept
-3. Use the tools to display interactive components
-4. Wait for student responses before continuing
-5. Adapt difficulty based on student performance
-6. Keep the story engaging and age-appropriate
-
-TEACHING APPROACH:
-- Relate math to story elements (e.g., "If Red Riding Hood has 2 pieces of cake and 3 cookies in her basket, how many treats total?")
-- Use spelling words from the story (basket, grandmother, wolf, huntsman, etc.)
-- Provide encouraging hints if students struggle
-- Celebrate correct answers enthusiastically
-- Make learning feel natural within the story
+CRITICAL RULES:
+- ALWAYS call show_graphic when starting a new scene
+- ALWAYS call change_voice before character dialogue
+- WAIT for interactive tools (math/spelling) to complete before continuing
+- Keep narration under 20 words per scene
+- Use show_narration to display what you're saying
 
 TOOL USAGE:
-- show_character: Make a character avatar visible when they first appear in the story
-- show_narration: Display story text on screen as you narrate it
-- request_input: Ask the user for voice input (they hold spacebar to speak)
-- show_graphic: Change to the next scene (1-10) as story progresses
-- show_math: Display a math question related to current scene
-- show_spelling: Show a spelling challenge using story words
-- show_completion: Celebrate when student completes an activity
-- change_voice: Switch the narrator voice to match the character speaking
+- show_character: Show character when they appear (wolf, grandma, etc.)
+- show_narration: Keep it to 1-2 sentences max
+- request_input: Brief prompts only
+- show_graphic: Call this for EVERY scene transition (1-10)
+- show_math: Quick easy questions (5+3=?)
+- show_spelling: Short words (wolf, path, basket)
+- show_completion: Celebrate quickly then move on
+- change_voice: Switch voices for character dialogue
+
+INTERACTIVE SCENES:
+- Scene 2: Pack the Basket (interactive component)
+- Scene 6: Choose the Path (interactive component)
+- Other scenes: Quick math/spelling, then move on
 
 CHARACTER VOICES:
 When narrating dialogue, use the change_voice tool to switch voices for immersion:
@@ -140,7 +130,7 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
 
   narratorVoice: {
     label: "narrator",
-    voice_id: "C13TXGSBliSQfV3318s8",
+    voice_id: "N1Hboqlv7EVe2vJJZEDX",
     description: "Default narrator voice for storytelling",
     stability: 0.5,
     similarity_boost: 0.75,
@@ -154,7 +144,7 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
       color: "red",
       voiceConfig: {
         label: "red_riding_hood",
-        voice_id: "uNX8xsOx2EBjgaerCsRt",
+        voice_id: "qBxpqy1zozoVmzSgB0Rm",
         description: "Little Red Riding Hood - innocent young girl",
         stability: 0.6,
         similarity_boost: 0.8,
@@ -167,7 +157,7 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
       color: "slate",
       voiceConfig: {
         label: "wolf",
-        voice_id: "zt3hcTSXa6Wt6GbOg5Ho",
+        voice_id: "nQuulGXH8RnNTodfyvtO",
         description: "The Wolf - cunning and deep",
         stability: 0.4,
         similarity_boost: 0.7,
@@ -180,7 +170,7 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
       color: "gray",
       voiceConfig: {
         label: "grandmother",
-        voice_id: "ueNx3ohiKrOvUObXedKm",
+        voice_id: "pKiwr0RpfC2ecoUHY2AP",
         description: "Grandmother - elderly and warm",
         stability: 0.5,
         similarity_boost: 0.75,
@@ -189,16 +179,16 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
   ],
 
   scenes: [
-    { title: "Home", image: "/scenes/1.png" },
-    { title: "The Basket", image: "/scenes/2.png" },
-    { title: "Into the Woods", image: "/scenes/3.png" },
-    { title: "The Wolf", image: "/scenes/4.png" },
-    { title: "A Trick", image: "/scenes/5.png" },
-    { title: "Two Paths", image: "/scenes/6.png" },
-    { title: "Flowers", image: "/scenes/7.png" },
-    { title: "Grandmother's", image: "/scenes/8.png" },
-    { title: "The Rescue", image: "/scenes/9.png" },
-    { title: "The End", image: "/scenes/10.png" },
+    { title: "Opening", image: "/scenes/opening.jpeg" },
+    { title: "Pack the Basket", component: "pack-basket" },
+    { title: "At Home", image: "/scenes/at_home.jpeg" },
+    { title: "Into the Woods", image: "/scenes/at_home.jpeg" },
+    { title: "Meeting the Wolf", image: "/scenes/at_home.jpeg" },
+    { title: "Two Paths", component: "forest-paths" },
+    { title: "Picking Flowers", image: "/scenes/at_home.jpeg" },
+    { title: "Grandmother's House", image: "/scenes/at_home.jpeg" },
+    { title: "The Rescue", image: "/scenes/at_home.jpeg" },
+    { title: "Happy Ending", image: "/scenes/goodbye.jpeg" },
   ],
 
   teachingObjectives: [
