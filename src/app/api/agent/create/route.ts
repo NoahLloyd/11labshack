@@ -203,24 +203,36 @@ IMPORTANT: Always call show_graphic when starting a new scene, then introduce te
           model_id: "eleven_turbo_v2_5",
           stability: 0.5,
           similarity_boost: 0.75,
-          voice_settings: {
-            // Character-specific voice mappings
-            red_riding_hood: {
-              voice_id: "uNX8xsOx2EBjgaerCsRt",
-              stability: 0.6,
-              similarity_boost: 0.8,
-            },
-            wolf: {
-              voice_id: "zt3hcTSXa6Wt6GbOg5Ho",
-              stability: 0.4,
-              similarity_boost: 0.7,
-            },
-            grandmother: {
-              voice_id: "ueNx3ohiKrOvUObXedKm",
+          supported_voices: [
+            {
+              label: "narrator",
+              voice_id: "21m00Tcm4TlvDq8ikWAM",
+              description: "Default narrator voice for storytelling",
               stability: 0.5,
               similarity_boost: 0.75,
             },
-          },
+            {
+              label: "red_riding_hood",
+              voice_id: "uNX8xsOx2EBjgaerCsRt",
+              description: "Little Red Riding Hood - innocent young girl",
+              stability: 0.6,
+              similarity_boost: 0.8,
+            },
+            {
+              label: "wolf",
+              voice_id: "zt3hcTSXa6Wt6GbOg5Ho",
+              description: "The Wolf - cunning and deep",
+              stability: 0.4,
+              similarity_boost: 0.7,
+            },
+            {
+              label: "grandmother",
+              voice_id: "ueNx3ohiKrOvUObXedKm",
+              description: "Grandmother - elderly and warm",
+              stability: 0.5,
+              similarity_boost: 0.75,
+            },
+          ],
         },
       },
       name: "Red Riding Hood Teacher",

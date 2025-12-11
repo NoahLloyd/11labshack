@@ -43,7 +43,6 @@ export default function RedRidingHoodStory() {
   const [agentId, setAgentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversation, setConversation] = useState<Conversation | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentScene, setCurrentScene] = useState(1);
@@ -67,7 +66,7 @@ export default function RedRidingHoodStory() {
       if (result.state === 'prompt') {
         setShowPermissionPrompt(true);
       }
-    } catch (err) {
+    } catch {
       console.log('Permission API not supported, will request on start');
     }
   };
@@ -78,7 +77,7 @@ export default function RedRidingHoodStory() {
       stream.getTracks().forEach(track => track.stop());
       setHasPermission(true);
       setShowPermissionPrompt(false);
-    } catch (err) {
+    } catch {
       setError('Microphone access is required for voice interaction. Please enable it in your browser settings.');
     }
   };
@@ -113,6 +112,7 @@ export default function RedRidingHoodStory() {
 
       const conv = await Conversation.startSession({
         agentId: agentId,
+        connectionType: "websocket",
         onConnect: () => {
           console.log("Connected to agent");
           setIsConnected(true);
@@ -121,24 +121,30 @@ export default function RedRidingHoodStory() {
           console.log("Disconnected from agent");
           setIsConnected(false);
         },
-        onError: (error) => {
-          console.error("Conversation error:", error);
+        onError: (message: string) => {
+          console.error("Conversation error:", message);
           setError("Connection error occurred");
         },
-        onToolCall: (toolCall) => {
-          console.log("Tool call received:", toolCall);
-          handleToolCall(toolCall);
+        onMessage: (message: unknown) => {
+          console.log("Message received:", message);
+          // Client tool calls should come through as messages
+          const msg = message as { type?: string; tool_name?: string; parameters?: Record<string, unknown> };
+          if (msg.type === "client_tool_call" && msg.tool_name) {
+            handleToolCall({
+              toolName: msg.tool_name,
+              parameters: msg.parameters || {},
+            });
+          }
         },
       });
 
       conversationRef.current = conv;
-      setConversation(conv);
       setError(null);
-    } catch (err) {
+    } catch (error) {
       setError(
-        err instanceof Error ? err.message : "Failed to start conversation"
+        error instanceof Error ? error.message : "Failed to start conversation"
       );
-      console.error("Error starting conversation:", err);
+      console.error("Error starting conversation:", error);
     } finally {
       setIsLoading(false);
     }
@@ -157,27 +163,11 @@ export default function RedRidingHoodStory() {
         break;
 
       case "change_voice":
-        // Map character names to voice IDs
-        const voiceMap: Record<string, string> = {
-          narrator: "21m00Tcm4TlvDq8ikWAM", // Default narrator
-          red_riding_hood: "uNX8xsOx2EBjgaerCsRt", // Little Red Riding Hood
-          wolf: "zt3hcTSXa6Wt6GbOg5Ho", // The Wolf
-          grandmother: "ueNx3ohiKrOvUObXedKm", // Grandmother
-        };
-
+        // Voice switching is handled server-side by ElevenLabs when using supported_voices
+        // We just update the UI to show which character is speaking
         const character = parameters.character as string;
-        const newVoiceId = voiceMap[character];
-
-        if (newVoiceId && conversationRef.current) {
-          try {
-            // Update voice dynamically
-            conversationRef.current.setVoice(newVoiceId);
-            setCurrentCharacter(character);
-            console.log(`Voice changed to: ${character} (${newVoiceId})`);
-          } catch (error) {
-            console.error("Failed to change voice:", error);
-          }
-        }
+        setCurrentCharacter(character);
+        console.log(`Voice indicator updated to: ${character}`);
         break;
 
       case "show_math":
@@ -188,12 +178,7 @@ export default function RedRidingHoodStory() {
             answer: parameters.answer,
             hint: parameters.hint,
             onComplete: (correct: boolean) => {
-              if (conversationRef.current && toolCall.toolCallId) {
-                conversationRef.current.sendToolResponse({
-                  toolCallId: toolCall.toolCallId,
-                  response: JSON.stringify({ correct }),
-                });
-              }
+              console.log(`Math challenge completed: ${correct ? 'correct' : 'incorrect'}`);
               setComponent({ type: null });
             },
           },
@@ -207,12 +192,7 @@ export default function RedRidingHoodStory() {
             word: parameters.word,
             context: parameters.context,
             onComplete: (correct: boolean) => {
-              if (conversationRef.current && toolCall.toolCallId) {
-                conversationRef.current.sendToolResponse({
-                  toolCallId: toolCall.toolCallId,
-                  response: JSON.stringify({ correct }),
-                });
-              }
+              console.log(`Spelling challenge completed: ${correct ? 'correct' : 'incorrect'}`);
               setComponent({ type: null });
             },
           },
@@ -235,7 +215,6 @@ export default function RedRidingHoodStory() {
     if (conversationRef.current) {
       await conversationRef.current.endSession();
       conversationRef.current = null;
-      setConversation(null);
       setIsConnected(false);
       setComponent({ type: null });
       setCurrentScene(1);
@@ -247,7 +226,7 @@ export default function RedRidingHoodStory() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-red-50 to-orange-50">
+    <div className="min-h-screen bg-linear-to-br from-rose-50 via-red-50 to-orange-50">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -280,7 +259,7 @@ export default function RedRidingHoodStory() {
           {!isConnected ? (
             /* Start Screen */
             <div className="text-center max-w-xl mx-auto py-12">
-              <div className="w-32 h-32 bg-gradient-to-br from-red-500 to-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+              <div className="w-32 h-32 bg-linear-to-br from-red-500 to-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
                 <span className="text-6xl">🧒</span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -341,7 +320,7 @@ export default function RedRidingHoodStory() {
                   }
                 }}
                 disabled={isLoading || !agentId}
-                className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-rose-600 text-white px-10 py-5 rounded-full font-semibold text-lg hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                className="inline-flex items-center justify-center gap-3 bg-linear-to-r from-red-500 to-rose-600 text-white px-10 py-5 rounded-full font-semibold text-lg hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
               >
                 {isLoading ? (
                   <>
@@ -367,7 +346,7 @@ export default function RedRidingHoodStory() {
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Left: Scene Display */}
               <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-br from-red-500 to-rose-600 p-8 min-h-[400px] flex flex-col items-center justify-center relative">
+                <div className="bg-linear-to-br from-red-500 to-rose-600 p-8 min-h-100 flex flex-col items-center justify-center relative">
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-8 left-8 w-24 h-24 border-4 border-white rounded-full" />
                     <div className="absolute bottom-8 right-8 w-16 h-16 border-4 border-white rotate-45" />
@@ -438,7 +417,7 @@ export default function RedRidingHoodStory() {
                 </div>
 
                 {/* Interactive Component Area */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 min-h-[300px] flex items-center justify-center">
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 min-h-75 flex items-center justify-center">
                   {component.type === null && (
                     <div className="text-center text-gray-400">
                       <div className="text-5xl mb-4">🎯</div>
