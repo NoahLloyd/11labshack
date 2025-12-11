@@ -44,7 +44,7 @@ export default function MathQuestion({ question, answer, hint, onComplete }: Mat
 
       {feedback === 'correct' && (
         <div className="bg-green-100 border-2 border-green-500 rounded-lg p-4 mb-4">
-          <p className="text-green-700 font-bold text-lg">🎉 Excellent! That's correct!</p>
+          <p className="text-green-700 font-bold text-lg">🎉 Excellent! That&apos;s correct!</p>
         </div>
       )}
 

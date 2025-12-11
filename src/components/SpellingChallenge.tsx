@@ -35,7 +35,7 @@ export default function SpellingChallenge({ word, context, onComplete }: Spellin
       <h3 className="text-2xl font-bold text-blue-600 mb-4">Spelling Bee! 🐝</h3>
 
       <div className="mb-6">
-        <p className="text-sm text-gray-600 mb-3 italic">"{context}"</p>
+        <p className="text-sm text-gray-600 mb-3 italic">&ldquo;{context}&rdquo;</p>
 
         <div className="flex gap-2 mb-4">
           <button
