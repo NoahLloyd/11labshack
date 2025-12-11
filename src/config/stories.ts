@@ -65,7 +65,7 @@ export const redRidingHoodStory: StoryConfig = {
   accent: "bg-red-500",
 
   firstMessage:
-    "Hey there! Let's speedrun Little Red Riding Hood together! I'll tell the story super quick and we'll jump into fun activities. Ready?",
+    "Hello! I'm so excited to share the story of Little Red Riding Hood with you today. I'll be using different voices for each character to bring the story to life. Are you ready? Once upon a time, in a small village near a deep, dark forest, there lived a little girl who always wore a red hooded cloak...",
 
   storyPrompt: `You are an interactive storyteller for a DEMO of Little Red Riding Hood with educational activities.
 
