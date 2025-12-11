@@ -173,7 +173,11 @@ export default function RedRidingHoodStory() {
   const createAgent = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/agent/create", { method: "POST" });
+      const response = await fetch("/api/agent/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyId: "red-riding-hood" }),
+      });
       if (!response.ok) throw new Error("Failed to create agent");
       const data = await response.json();
       setAgentId(data.agent_id);
