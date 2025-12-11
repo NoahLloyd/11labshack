@@ -73,8 +73,16 @@ TOOL USAGE:
 - show_math: Display a math question related to current scene
 - show_spelling: Show a spelling challenge using story words
 - show_completion: Celebrate when student completes an activity
+- change_voice: Switch the narrator voice to match the character speaking
 
-IMPORTANT: Always call show_graphic when starting a new scene, then introduce teaching activity.`,
+CHARACTER VOICES:
+When narrating dialogue, use the change_voice tool to switch voices for immersion:
+- Little Red Riding Hood (innocent, young): Use "red_riding_hood" voice
+- The Wolf (cunning, deep): Use "wolf" voice  
+- Grandmother (elderly, warm): Use "grandmother" voice
+- Narrator/Huntsman/Mother (default): Use "narrator" voice
+
+IMPORTANT: Always call show_graphic when starting a new scene, then introduce teaching activity. Use change_voice before speaking as a character to make dialogue more engaging.`,
             llm: "gpt-4o-mini",
             temperature: 0.7,
             tools: [
@@ -163,14 +171,56 @@ IMPORTANT: Always call show_graphic when starting a new scene, then introduce te
                 },
                 expects_response: false,
               },
+              {
+                type: "client",
+                name: "change_voice",
+                description:
+                  "Change the narrator voice to match the character who is speaking. Use this before speaking dialogue to make the story more immersive.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    character: {
+                      type: "string",
+                      enum: [
+                        "narrator",
+                        "red_riding_hood",
+                        "wolf",
+                        "grandmother",
+                      ],
+                      description:
+                        "Which character is about to speak: narrator (default/huntsman/mother), red_riding_hood (young girl), wolf (cunning antagonist), grandmother (elderly woman)",
+                    },
+                  },
+                  required: ["character"],
+                },
+                expects_response: false,
+              },
             ],
           },
         },
         tts: {
-          voice_id: "21m00Tcm4TlvDq8ikWAM", // Rachel voice - clear and friendly
+          voice_id: "21m00Tcm4TlvDq8ikWAM", // Default narrator voice - clear and friendly
           model_id: "eleven_turbo_v2_5",
           stability: 0.5,
           similarity_boost: 0.75,
+          voice_settings: {
+            // Character-specific voice mappings
+            red_riding_hood: {
+              voice_id: "uNX8xsOx2EBjgaerCsRt",
+              stability: 0.6,
+              similarity_boost: 0.8,
+            },
+            wolf: {
+              voice_id: "zt3hcTSXa6Wt6GbOg5Ho",
+              stability: 0.4,
+              similarity_boost: 0.7,
+            },
+            grandmother: {
+              voice_id: "ueNx3ohiKrOvUObXedKm",
+              stability: 0.5,
+              similarity_boost: 0.75,
+            },
+          },
         },
       },
       name: "Red Riding Hood Teacher",

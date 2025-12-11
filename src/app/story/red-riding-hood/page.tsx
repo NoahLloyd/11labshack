@@ -47,6 +47,9 @@ export default function RedRidingHoodStory() {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentScene, setCurrentScene] = useState(1);
+  const [hasPermission, setHasPermission] = useState(false);
+  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  const [currentCharacter, setCurrentCharacter] = useState<string>("narrator");
   const [component, setComponent] = useState<InteractiveComponent>({
     type: null,
   });
@@ -54,7 +57,31 @@ export default function RedRidingHoodStory() {
 
   useEffect(() => {
     createAgent();
+    checkMicrophonePermission();
   }, []);
+
+  const checkMicrophonePermission = async () => {
+    try {
+      const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      setHasPermission(result.state === 'granted');
+      if (result.state === 'prompt') {
+        setShowPermissionPrompt(true);
+      }
+    } catch (err) {
+      console.log('Permission API not supported, will request on start');
+    }
+  };
+
+  const requestMicrophoneAccess = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      setHasPermission(true);
+      setShowPermissionPrompt(false);
+    } catch (err) {
+      setError('Microphone access is required for voice interaction. Please enable it in your browser settings.');
+    }
+  };
 
   const createAgent = async () => {
     try {
@@ -127,6 +154,30 @@ export default function RedRidingHoodStory() {
     switch (toolName) {
       case "show_graphic":
         setCurrentScene((parameters.scene as number) || 1);
+        break;
+
+      case "change_voice":
+        // Map character names to voice IDs
+        const voiceMap: Record<string, string> = {
+          narrator: "21m00Tcm4TlvDq8ikWAM", // Default narrator
+          red_riding_hood: "uNX8xsOx2EBjgaerCsRt", // Little Red Riding Hood
+          wolf: "zt3hcTSXa6Wt6GbOg5Ho", // The Wolf
+          grandmother: "ueNx3ohiKrOvUObXedKm", // Grandmother
+        };
+
+        const character = parameters.character as string;
+        const newVoiceId = voiceMap[character];
+
+        if (newVoiceId && conversationRef.current) {
+          try {
+            // Update voice dynamically
+            conversationRef.current.setVoice(newVoiceId);
+            setCurrentCharacter(character);
+            console.log(`Voice changed to: ${character} (${newVoiceId})`);
+          } catch (error) {
+            console.error("Failed to change voice:", error);
+          }
+        }
         break;
 
       case "show_math":
@@ -260,8 +311,35 @@ export default function RedRidingHoodStory() {
                 </div>
               </div>
 
+              {showPermissionPrompt && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
+                  <div className="flex items-start gap-3">
+                    <Mic className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-amber-900 mb-1">Microphone Access Needed</h4>
+                      <p className="text-sm text-amber-700 mb-3">
+                        This story uses voice interaction. We&apos;ll need access to your microphone to hear you speak.
+                      </p>
+                      <button
+                        onClick={requestMicrophoneAccess}
+                        className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                      >
+                        Enable Microphone
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <button
-                onClick={startConversation}
+                onClick={async () => {
+                  if (!hasPermission) {
+                    await requestMicrophoneAccess();
+                  }
+                  if (hasPermission || !showPermissionPrompt) {
+                    startConversation();
+                  }
+                }}
                 disabled={isLoading || !agentId}
                 className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-rose-600 text-white px-10 py-5 rounded-full font-semibold text-lg hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
               >
@@ -277,9 +355,12 @@ export default function RedRidingHoodStory() {
                   </>
                 )}
               </button>
-              <p className="text-sm text-gray-500 mt-4">
-                Make sure your microphone is enabled
-              </p>
+              {hasPermission && (
+                <p className="text-sm text-green-600 mt-4 flex items-center justify-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Microphone ready
+                </p>
+              )}
             </div>
           ) : (
             /* Story Experience */
@@ -310,13 +391,12 @@ export default function RedRidingHoodStory() {
                     {[...Array(10)].map((_, i) => (
                       <div
                         key={i}
-                        className={`w-3 h-3 rounded-full transition-colors ${
-                          i + 1 === currentScene
-                            ? "bg-red-500"
-                            : i + 1 < currentScene
+                        className={`w-3 h-3 rounded-full transition-colors ${i + 1 === currentScene
+                          ? "bg-red-500"
+                          : i + 1 < currentScene
                             ? "bg-red-300"
                             : "bg-gray-200"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -335,18 +415,17 @@ export default function RedRidingHoodStory() {
                       <div>
                         <p className="font-semibold text-gray-900">Listening...</p>
                         <p className="text-sm text-gray-500">
-                          Speak naturally to interact
+                          Speaking as: <span className="font-medium text-gray-700 capitalize">{currentCharacter.replace('_', ' ')}</span>
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={toggleMute}
-                        className={`p-3 rounded-full transition-colors ${
-                          isMuted
-                            ? "bg-red-100 text-red-600"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`p-3 rounded-full transition-colors ${isMuted
+                          ? "bg-red-100 text-red-600"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         {isMuted ? (
                           <MicOff className="w-5 h-5" />

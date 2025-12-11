@@ -133,18 +133,37 @@ export default function Home() {
       <section className="pt-28 pb-12 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
-            <Mic className="w-5 h-5 text-violet-600" />
+            <Mic className="w-5 h-5 text-violet-600 animate-pulse" />
             <span className="text-sm font-medium text-violet-600">
               Voice-powered interactive stories
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Choose your adventure
+            Stories that listen and respond
           </h1>
-          <p className="text-xl text-gray-600 max-w-xl">
-            Classic tales reimagined as interactive voice experiences. Pick a
-            story and start talking.
+          <p className="text-xl text-gray-600 max-w-2xl">
+            Classic tales reimagined as interactive voice experiences. Just start talking—the story listens, adapts, and teaches along the way.
           </p>
+          <div className="flex items-center gap-6 mt-8">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center">
+                <Mic className="w-4 h-4 text-violet-600" />
+              </div>
+              <span>Speak naturally</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-8 h-8 bg-fuchsia-100 rounded-full flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-fuchsia-600" />
+              </div>
+              <span>AI-powered learning</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                <Star className="w-4 h-4 text-amber-600 fill-current" />
+              </div>
+              <span>Educational & fun</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -187,11 +206,19 @@ export default function Home() {
                   <p className="text-gray-600 text-lg mb-6 leading-relaxed">
                     {featuredStory.description}
                   </p>
-                  <div className="flex items-center gap-6 text-sm text-gray-500 mb-8">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {featuredStory.duration}
+                  <div className="bg-violet-50 rounded-xl p-4 mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Mic className="w-4 h-4 text-violet-600" />
+                      <span className="text-sm font-semibold text-violet-900">Voice Interaction</span>
                     </div>
+                    <p className="text-sm text-violet-700">
+                      Talk to the characters, make decisions by speaking, and solve challenges using your voice!
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-6 text-sm text-gray-500 mb-8">\n                    <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    {featuredStory.duration}
+                  </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
                         Ages {featuredStory.age}
