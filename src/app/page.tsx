@@ -31,52 +31,54 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F8F6F1] text-gray-900">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F8F6F1]/90 backdrop-blur-xl border-b border-gray-200/50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-4 h-4 text-white" />
+      <nav className="fixed top-0 left-0 right-0 z-50">
+        <div className="mx-4 mt-4">
+          <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-md border border-gray-200/60 rounded-2xl shadow-sm">
+            <div className="px-4 h-14 flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
+                  <BookOpen className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-base font-semibold">Saga</span>
+              </Link>
+              <div className="hidden md:flex items-center gap-1">
+                <a
+                  href="#library"
+                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                >
+                  Library
+                </a>
+                <Link
+                  href="/pricing"
+                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                >
+                  Pricing
+                </Link>
+              </div>
+              <div className="flex items-center gap-2">
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+                      Sign in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all">
+                      Get started
+                    </button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-8 h-8",
+                      },
+                    }}
+                  />
+                </SignedIn>
+              </div>
             </div>
-            <span className="text-lg font-semibold tracking-tight">
-              StoryPlay
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm">
-            <a
-              href="#library"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Library
-            </a>
-            <a
-              href="#create"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Create
-            </a>
-          </div>
-          <div className="flex items-center gap-3">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                  Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
-                  Get started
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                  },
-                }}
-              />
-            </SignedIn>
           </div>
         </div>
       </nav>
@@ -94,7 +96,8 @@ export default function Home() {
             Stories that listen and respond
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl">
-            Classic tales reimagined as interactive voice experiences. Just start talking—the story listens, adapts, and teaches along the way.
+            Classic tales reimagined as interactive voice experiences. Just
+            start talking—the story listens, adapts, and teaches along the way.
           </p>
           <div className="flex items-center gap-6 mt-8">
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -161,16 +164,20 @@ export default function Home() {
                   <div className="bg-violet-50 rounded-xl p-4 mb-6">
                     <div className="flex items-center gap-2 mb-2">
                       <Mic className="w-4 h-4 text-violet-600" />
-                      <span className="text-sm font-semibold text-violet-900">Voice Interaction</span>
+                      <span className="text-sm font-semibold text-violet-900">
+                        Voice Interaction
+                      </span>
                     </div>
                     <p className="text-sm text-violet-700">
-                      Talk to the characters, make decisions by speaking, and solve challenges using your voice!
+                      Talk to the characters, make decisions by speaking, and
+                      solve challenges using your voice!
                     </p>
                   </div>
-                  <div className="flex items-center gap-6 text-sm text-gray-500 mb-8">\n                    <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {featuredStory.duration}
-                  </div>
+                  <div className="flex items-center gap-6 text-sm text-gray-500 mb-8">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      {featuredStory.duration}
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
                         Ages {featuredStory.age}
@@ -313,13 +320,13 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-md flex items-center justify-center">
+              <div className="w-6 h-6 bg-violet-600 rounded-md flex items-center justify-center">
                 <BookOpen className="w-3 h-3 text-white" />
               </div>
-              <span className="font-semibold">StoryPlay</span>
+              <span className="font-semibold">Saga</span>
             </div>
             <p className="text-sm text-gray-500">
-              © 2024 StoryPlay. Voice-powered stories for curious kids.
+              © 2024 Saga. Voice-powered stories for curious kids.
             </p>
             <div className="flex gap-6 text-sm text-gray-500">
               <a href="#" className="hover:text-gray-900 transition-colors">

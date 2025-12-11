@@ -226,7 +226,7 @@ export async function POST(request: Request) {
         },
         tts: {
           voice_id: storyConfig.narratorVoice.voice_id,
-          model_id: "eleven_turbo_v2_5",
+          model_id: "eleven_flash_v2_5",
           stability: storyConfig.narratorVoice.stability || 0.5,
           similarity_boost: storyConfig.narratorVoice.similarity_boost || 0.75,
           supported_voices: supportedVoices,

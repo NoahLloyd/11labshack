@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StoryPlay - Interactive Voice Stories for Kids",
-  description: "Transform classic tales into interactive adventures through voice-powered storytelling",
+  title: "Saga - Interactive Voice Stories for Kids",
+  description:
+    "Transform classic tales into interactive adventures through voice-powered storytelling",
 };
 
 export default function RootLayout({
