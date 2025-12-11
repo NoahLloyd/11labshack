@@ -9,12 +9,19 @@ interface SpellingChallengeProps {
   onComplete: (correct: boolean) => void;
 }
 
-export default function SpellingChallenge({ word, context, onComplete }: SpellingChallengeProps) {
+export default function SpellingChallenge({
+  word,
+  context,
+  onComplete,
+}: SpellingChallengeProps) {
   const [userInput, setUserInput] = useState("");
-  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
+  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
+    null
+  );
 
   const handleSubmit = () => {
-    const isCorrect = userInput.toLowerCase().trim() === word.toLowerCase().trim();
+    const isCorrect =
+      userInput.toLowerCase().trim() === word.toLowerCase().trim();
     setFeedback(isCorrect ? "correct" : "incorrect");
     if (isCorrect) {
       setTimeout(() => onComplete(true), 1500);
@@ -30,7 +37,9 @@ export default function SpellingChallenge({ word, context, onComplete }: Spellin
   return (
     <div className="w-full max-w-xs">
       <p className="text-xs text-stone-500 mb-1">Spelling</p>
-      <p className="text-sm text-stone-600 italic mb-3">&quot;{context}&quot;</p>
+      <p className="text-sm text-stone-600 italic mb-3">
+        &quot;{context}&quot;
+      </p>
 
       <button
         onClick={handlePlayAudio}

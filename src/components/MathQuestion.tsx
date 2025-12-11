@@ -9,10 +9,17 @@ interface MathQuestionProps {
   onComplete: (correct: boolean) => void;
 }
 
-export default function MathQuestion({ question, answer, hint, onComplete }: MathQuestionProps) {
+export default function MathQuestion({
+  question,
+  answer,
+  hint,
+  onComplete,
+}: MathQuestionProps) {
   const [userAnswer, setUserAnswer] = useState("");
   const [showHint, setShowHint] = useState(false);
-  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
+  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
+    null
+  );
 
   const handleSubmit = () => {
     const isCorrect = parseInt(userAnswer) === answer;
@@ -52,7 +59,9 @@ export default function MathQuestion({ question, answer, hint, onComplete }: Mat
         </button>
       )}
       {showHint && hint && (
-        <p className="text-xs text-stone-500 bg-stone-50 p-2 rounded mb-2">{hint}</p>
+        <p className="text-xs text-stone-500 bg-stone-50 p-2 rounded mb-2">
+          {hint}
+        </p>
       )}
 
       <button

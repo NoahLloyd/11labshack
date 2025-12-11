@@ -113,10 +113,11 @@ const PackBasket = forwardRef<PackBasketRef, PackBasketProps>(
     }, []);
 
     const getBasketSnapPosition = useCallback((index: number): Position => {
+      // Stack items closer together in the basket center
       const positions = [
-        { x: BASKET_CENTER.x - 6, y: BASKET_CENTER.y - 2 },
-        { x: BASKET_CENTER.x + 6, y: BASKET_CENTER.y - 2 },
-        { x: BASKET_CENTER.x, y: BASKET_CENTER.y + 6 },
+        { x: BASKET_CENTER.x - 3, y: BASKET_CENTER.y - 1 },
+        { x: BASKET_CENTER.x + 3, y: BASKET_CENTER.y + 1 },
+        { x: BASKET_CENTER.x, y: BASKET_CENTER.y + 4 },
       ];
       return positions[index % positions.length];
     }, []);
