@@ -146,7 +146,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_math",
                 description:
-                  "INTERACTIVE: Display a math question for the student to solve. Use this frequently throughout the story - at least once every 2-3 scenes. Make questions simple and story-related.",
+                  "INTERACTIVE: FIRST, speak the math question out loud to the student. THEN call this tool to display it on screen. Use this frequently throughout the story - at least once every 2-3 scenes. Make questions simple and story-related.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_spelling",
                 description:
-                  "INTERACTIVE: Display a spelling challenge for the student. Use this frequently - at least once every 2-3 scenes. Use simple story-related words like 'wolf', 'basket', 'path', 'grandma'.",
+                  "INTERACTIVE: FIRST, speak the spelling challenge out loud to the student (say the word and use it in a sentence). THEN call this tool to display it on screen. Use this frequently - at least once every 2-3 scenes. Use simple story-related words like 'wolf', 'basket', 'path', 'grandma'.",
                 parameters: {
                   type: "object",
                   properties: {
