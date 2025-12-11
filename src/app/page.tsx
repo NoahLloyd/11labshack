@@ -82,7 +82,7 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F8F6F1]/90 backdrop-blur-xl border-b border-gray-200/50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-lg font-semibold tracking-tight">
@@ -175,7 +175,7 @@ export default function Home() {
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Book Cover */}
                 <div
-                  className={`bg-gradient-to-br ${featuredStory.cover} p-12 flex items-center justify-center min-h-[400px] relative overflow-hidden`}
+                  className={`bg-linear-to-br ${featuredStory.cover} p-12 flex items-center justify-center min-h-[400px] relative overflow-hidden`}
                 >
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-8 left-8 w-32 h-32 border-4 border-white rounded-full" />
@@ -288,7 +288,7 @@ export default function Home() {
               >
                 {/* Book Cover */}
                 <div
-                  className={`bg-gradient-to-br ${story.cover} p-6 h-48 flex items-center justify-center relative`}
+                  className={`bg-linear-to-br ${story.cover} p-6 h-48 flex items-center justify-center relative`}
                 >
                   <div className="w-20 h-28 bg-white/20 backdrop-blur-sm rounded-md flex items-center justify-center border border-white/30 shadow-lg group-hover:scale-105 transition-transform">
                     <BookOpen className="w-8 h-8 text-white" />
@@ -361,7 +361,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-md flex items-center justify-center">
+              <div className="w-6 h-6 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-md flex items-center justify-center">
                 <BookOpen className="w-3 h-3 text-white" />
               </div>
               <span className="font-semibold">StoryPlay</span>
