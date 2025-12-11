@@ -121,7 +121,12 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
                     },
                     speaker: {
                       type: "string",
-                      enum: ["narrator", "red-riding-hood", "grandmother", "wolf"],
+                      enum: [
+                        "narrator",
+                        "red-riding-hood",
+                        "grandmother",
+                        "wolf",
+                      ],
                       description: "Who is speaking (defaults to narrator)",
                     },
                   },
@@ -259,14 +264,14 @@ IMPORTANT: Always call show_graphic when starting a new scene. Use show_narratio
           },
         },
         tts: {
-          voice_id: "21m00Tcm4TlvDq8ikWAM", // Default narrator voice - clear and friendly
+          voice_id: "C13TXGSBliSQfV3318s8", // Default narrator voice - clear and friendly
           model_id: "eleven_turbo_v2_5",
           stability: 0.5,
           similarity_boost: 0.75,
           supported_voices: [
             {
               label: "narrator",
-              voice_id: "21m00Tcm4TlvDq8ikWAM",
+              voice_id: "C13TXGSBliSQfV3318s8",
               description: "Default narrator voice for storytelling",
               stability: 0.5,
               similarity_boost: 0.75,
