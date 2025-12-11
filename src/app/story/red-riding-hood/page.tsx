@@ -14,6 +14,33 @@ type InteractiveComponent = {
   props?: Record<string, unknown>;
 };
 
+type CharacterId = "red-riding-hood" | "grandmother" | "wolf";
+type Speaker = "narrator" | CharacterId;
+
+interface CharacterConfig {
+  name: string;
+  avatar: string;
+  color: string;
+}
+
+const characters: Record<CharacterId, CharacterConfig> = {
+  "red-riding-hood": {
+    name: "Little Red Riding Hood",
+    avatar: "🧒",
+    color: "red",
+  },
+  grandmother: {
+    name: "Grandmother",
+    avatar: "👵",
+    color: "gray",
+  },
+  wolf: {
+    name: "The Wolf",
+    avatar: "🐺",
+    color: "slate",
+  },
+};
+
 const scenes: { title: string; image: string }[] = [
   { title: "Home", image: "/scenes/1.png" },
   { title: "The Basket", image: "/scenes/2.png" },
@@ -40,12 +67,46 @@ export default function RedRidingHoodStory() {
   const [component, setComponent] = useState<InteractiveComponent>({
     type: null,
   });
+
+  // Character avatar state
+  const [currentSpeaker, setCurrentSpeaker] = useState<Speaker>("narrator");
+  const [appearedCharacters, setAppearedCharacters] = useState<Set<CharacterId>>(new Set());
+  const [storyText, setStoryText] = useState<string>("");
+  const [isAwaitingInput, setIsAwaitingInput] = useState(false);
+  const [isHoldingSpacebar, setIsHoldingSpacebar] = useState(false);
+
   const conversationRef = useRef<Conversation | null>(null);
 
   useEffect(() => {
     createAgent();
     checkMicrophonePermission();
   }, []);
+
+  // Spacebar event listener for push-to-talk
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && isAwaitingInput && !isHoldingSpacebar) {
+        e.preventDefault();
+        setIsHoldingSpacebar(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space" && isHoldingSpacebar) {
+        e.preventDefault();
+        setIsHoldingSpacebar(false);
+        setIsAwaitingInput(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isAwaitingInput, isHoldingSpacebar]);
 
   const checkMicrophonePermission = async () => {
     try {
@@ -97,14 +158,36 @@ export default function RedRidingHoodStory() {
         agentId,
         onConnect: () => setIsConnected(true),
         onDisconnect: () => setIsConnected(false),
-        onError: (error) => {
+        onError: (error: string) => {
           console.error("Conversation error:", error);
           setError("Connection error");
         },
-        onModeChange: (mode) => {
+        onModeChange: (mode: { mode: string }) => {
           setIsSpeaking(mode.mode === "speaking");
         },
         clientTools: {
+          show_character: (parameters: { character: string }) => {
+            console.log("show_character called:", parameters);
+            const charId = parameters.character as CharacterId;
+            if (charId && characters[charId]) {
+              setAppearedCharacters((prev) => new Set(prev).add(charId));
+            }
+          },
+          show_narration: (parameters: { text: string; speaker?: string }) => {
+            console.log("show_narration called:", parameters);
+            setStoryText(parameters.text);
+            if (parameters.speaker) {
+              setCurrentSpeaker(parameters.speaker as Speaker);
+            }
+            setComponent({ type: null });
+            setIsAwaitingInput(false);
+          },
+          request_input: (parameters: { prompt: string }) => {
+            console.log("request_input called:", parameters);
+            setStoryText(parameters.prompt);
+            setIsAwaitingInput(true);
+            setComponent({ type: null });
+          },
           show_graphic: (parameters: { scene: number }) => {
             console.log("show_graphic called:", parameters);
             setCurrentScene(parameters.scene || 1);
@@ -158,7 +241,8 @@ export default function RedRidingHoodStory() {
             setTimeout(() => setComponent({ type: null }), 3000);
           },
         },
-      });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
       conversationRef.current = conv;
       setError(null);
     } catch (err) {
@@ -175,6 +259,11 @@ export default function RedRidingHoodStory() {
       setIsConnected(false);
       setComponent({ type: null });
       setCurrentScene(1);
+      setCurrentSpeaker("narrator");
+      setAppearedCharacters(new Set());
+      setStoryText("");
+      setIsAwaitingInput(false);
+      setIsHoldingSpacebar(false);
     }
   };
 
@@ -197,9 +286,8 @@ export default function RedRidingHoodStory() {
           {isConnected ? (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className={`p-2 rounded-full ${
-                isMuted ? "text-red-500" : "text-stone-500"
-              }`}
+              className={`p-2 rounded-full ${isMuted ? "text-red-500" : "text-stone-500"
+                }`}
             >
               {isMuted ? (
                 <MicOff className="w-4 h-4" />
@@ -298,95 +386,197 @@ export default function RedRidingHoodStory() {
         ) : (
           /* Story Experience */
           <div className="flex-1 flex flex-col">
-            {/* Scene Image */}
-            <div className="flex-1 relative bg-stone-200 min-h-[50vh]">
-              <Image
-                src={scene.image}
-                alt={scene.title}
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-              {/* Fallback gradient */}
-              <div className="absolute inset-0 bg-gradient-to-b from-rose-100 to-rose-200 -z-10" />
-
-              {/* Scene indicator */}
-              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                <span className="text-xs font-medium text-stone-700">
-                  {currentScene}/10 · {scene.title}
-                </span>
-              </div>
-
-              {/* Speaking indicator */}
-              {isSpeaking && (
-                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-2">
-                  <Volume2 className="w-3 h-3 text-stone-600" />
-                  <span className="text-xs text-stone-600">Speaking...</span>
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Panel */}
-            <div className="bg-white border-t border-stone-200">
-              {/* Progress Bar */}
-              <div className="h-1 bg-stone-100">
-                <div
-                  className="h-full bg-stone-900 transition-all duration-500"
-                  style={{ width: `${(currentScene / 10) * 100}%` }}
-                />
-              </div>
-
-              {/* Activity Area */}
-              <div className="p-6">
-                {component.type === null ? (
-                  <div className="text-center py-4">
-                    <p className="text-stone-400 text-sm">
-                      {isSpeaking
-                        ? "Listen to the story..."
-                        : "Say something to continue..."}
-                    </p>
+            <div className="flex-1 grid lg:grid-cols-2 gap-4 p-4">
+              {/* Left: Story Narration / Activities */}
+              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 flex flex-col min-h-125">
+                {/* Story Narration */}
+                {component.type === null && !isAwaitingInput && (
+                  <div className="flex-1 flex flex-col justify-center">
+                    <div className="text-center mb-4">
+                      <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full mb-3">
+                        <span className="text-2xl">📖</span>
+                      </div>
+                    </div>
+                    {storyText ? (
+                      <div className="text-center">
+                        <p className="text-lg text-stone-700 leading-relaxed">
+                          {storyText}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center text-stone-400">
+                        <p className="text-sm">
+                          {isSpeaking ? "Listen to the story..." : "Waiting for narration..."}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex justify-center">
-                    {component.type === "math" && component.props && (
-                      <MathQuestion
-                        question={component.props.question as string}
-                        answer={component.props.answer as number}
-                        hint={component.props.hint as string | undefined}
-                        onComplete={
-                          component.props.onComplete as (
-                            correct: boolean
-                          ) => void
-                        }
-                      />
-                    )}
-                    {component.type === "spelling" && component.props && (
-                      <SpellingChallenge
-                        word={component.props.word as string}
-                        context={component.props.context as string}
-                        onComplete={
-                          component.props.onComplete as (
-                            correct: boolean
-                          ) => void
-                        }
-                      />
-                    )}
-                    {component.type === "completion" && component.props && (
-                      <CompletionMessage
-                        message={component.props.message as string}
-                      />
-                    )}
+                )}
+
+                {/* User Input Mode */}
+                {isAwaitingInput && (
+                  <div className="flex-1 flex flex-col justify-center items-center text-center">
+                    <div className="mb-6">
+                      <div className="text-5xl mb-4">🎤</div>
+                      <h3 className="text-xl font-bold text-stone-900 mb-3">
+                        {storyText || "Your turn to speak!"}
+                      </h3>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-xs text-stone-500">
+                        hold down spacebar to speak
+                      </p>
+                      <button
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${isHoldingSpacebar
+                          ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
+                          : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
+                          }`}
+                      >
+                        {isHoldingSpacebar ? (
+                          <>
+                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                            Recording...
+                          </>
+                        ) : (
+                          <>spacebar</>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Activities */}
+                {component.type === "math" && component.props && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <MathQuestion
+                      question={component.props.question as string}
+                      answer={component.props.answer as number}
+                      hint={component.props.hint as string | undefined}
+                      onComplete={
+                        component.props.onComplete as (correct: boolean) => void
+                      }
+                    />
+                  </div>
+                )}
+                {component.type === "spelling" && component.props && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <SpellingChallenge
+                      word={component.props.word as string}
+                      context={component.props.context as string}
+                      onComplete={
+                        component.props.onComplete as (correct: boolean) => void
+                      }
+                    />
+                  </div>
+                )}
+                {component.type === "completion" && component.props && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <CompletionMessage
+                      message={component.props.message as string}
+                    />
                   </div>
                 )}
               </div>
 
-              {/* End Button */}
-              <div className="px-6 pb-6 pt-2">
+              {/* Right: Character Display */}
+              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col min-h-125">
+                <div
+                  className={`flex-1 p-6 flex flex-col items-center justify-center transition-all ${currentSpeaker === "red-riding-hood"
+                    ? "bg-linear-to-br from-red-400 to-rose-500"
+                    : currentSpeaker === "grandmother"
+                      ? "bg-linear-to-br from-purple-400 to-pink-500"
+                      : currentSpeaker === "wolf"
+                        ? "bg-linear-to-br from-slate-600 to-gray-700"
+                        : "bg-linear-to-br from-amber-200 to-orange-300"
+                    }`}
+                >
+                  <div className="text-8xl mb-4">
+                    {currentSpeaker === "narrator"
+                      ? "📖"
+                      : characters[currentSpeaker as CharacterId]?.avatar}
+                  </div>
+                  <div className="bg-white rounded-xl px-4 py-2 shadow-lg">
+                    <p className="font-bold text-stone-900 text-lg">
+                      {currentSpeaker === "narrator"
+                        ? "Narrator"
+                        : characters[currentSpeaker as CharacterId]?.name}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Scene Progress */}
+                <div className="p-4 bg-stone-50">
+                  <div className="flex justify-center gap-1.5 mb-2">
+                    {[...Array(10)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-2.5 h-2.5 rounded-full transition-colors ${i + 1 === currentScene
+                          ? "bg-red-500"
+                          : i + 1 < currentScene
+                            ? "bg-red-300"
+                            : "bg-stone-200"
+                          }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-center text-xs text-stone-600">
+                    Scene {currentScene}/10 · {scene.title}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom: Character Avatars */}
+            <div className="bg-white border-t border-stone-200 p-4">
+              <div className="flex items-center justify-center gap-6 mb-3">
+                {(Object.keys(characters) as CharacterId[]).map((charId) => {
+                  const char = characters[charId];
+                  const isActive = currentSpeaker === charId;
+                  const hasAppeared = appearedCharacters.has(charId);
+
+                  return (
+                    <div
+                      key={charId}
+                      className={`flex flex-col items-center transition-all ${hasAppeared ? "opacity-100" : "opacity-30"
+                        }`}
+                    >
+                      <div
+                        className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl transition-all ${isActive
+                          ? "ring-4 ring-yellow-400 scale-110 shadow-lg bg-linear-to-br from-yellow-100 to-amber-100"
+                          : "ring-2 ring-stone-200 bg-stone-100"
+                          }`}
+                      >
+                        {char.avatar}
+                      </div>
+                      <p
+                        className={`text-xs font-medium mt-1 ${isActive ? "text-stone-900" : "text-stone-500"
+                          }`}
+                      >
+                        {char.name.split(" ")[0]}
+                      </p>
+                      {isActive && (
+                        <div className="mt-0.5 px-1.5 py-0.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold rounded-full">
+                          Speaking
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center gap-2 text-xs text-stone-500">
+                  {isSpeaking && (
+                    <>
+                      <Volume2 className="w-3 h-3 animate-pulse" />
+                      <span>Listening</span>
+                    </>
+                  )}
+                </div>
                 <button
                   onClick={endConversation}
-                  className="w-full text-xs text-stone-400 hover:text-stone-600"
+                  className="text-xs text-stone-400 hover:text-stone-600 underline"
                 >
                   End story
                 </button>
