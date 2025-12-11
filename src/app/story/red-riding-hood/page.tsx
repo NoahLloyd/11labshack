@@ -138,7 +138,11 @@ export default function RedRidingHoodStory() {
   const createAgent = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/agent/create", { method: "POST" });
+      const response = await fetch("/api/agent/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyId: "red-riding-hood" })
+      });
       if (!response.ok) throw new Error("Failed to create agent");
       const data = await response.json();
       setAgentId(data.agent_id);
@@ -239,6 +243,11 @@ export default function RedRidingHoodStory() {
               props: { message: parameters.message },
             });
             setTimeout(() => setComponent({ type: null }), 3000);
+          },
+          change_voice: (parameters: { character: string }) => {
+            console.log("change_voice called:", parameters);
+            setCurrentSpeaker(parameters.character as Speaker);
+            // Voice switching happens server-side via supported_voices
           },
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
