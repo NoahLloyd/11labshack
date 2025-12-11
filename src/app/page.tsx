@@ -12,7 +12,7 @@ import Link from "next/link";
 import { getAvailableStories } from "@/config/stories";
 
 // Load stories from configuration
-const stories = getAvailableStories().map(story => ({
+const stories = getAvailableStories().map((story) => ({
   id: story.id,
   title: story.title,
   author: story.author,
