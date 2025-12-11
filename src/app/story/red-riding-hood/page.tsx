@@ -67,14 +67,14 @@ export default function RedRidingHoodStory() {
   const [component, setComponent] = useState<InteractiveComponent>({
     type: null,
   });
-  
+
   // Character avatar state
   const [currentSpeaker, setCurrentSpeaker] = useState<Speaker>("narrator");
   const [appearedCharacters, setAppearedCharacters] = useState<Set<CharacterId>>(new Set());
   const [storyText, setStoryText] = useState<string>("");
   const [isAwaitingInput, setIsAwaitingInput] = useState(false);
   const [isHoldingSpacebar, setIsHoldingSpacebar] = useState(false);
-  
+
   const conversationRef = useRef<Conversation | null>(null);
 
   useEffect(() => {
@@ -158,11 +158,11 @@ export default function RedRidingHoodStory() {
         agentId,
         onConnect: () => setIsConnected(true),
         onDisconnect: () => setIsConnected(false),
-        onError: (error) => {
+        onError: (error: string) => {
           console.error("Conversation error:", error);
           setError("Connection error");
         },
-        onModeChange: (mode) => {
+        onModeChange: (mode: { mode: string }) => {
           setIsSpeaking(mode.mode === "speaking");
         },
         clientTools: {
@@ -241,7 +241,7 @@ export default function RedRidingHoodStory() {
             setTimeout(() => setComponent({ type: null }), 3000);
           },
         },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       conversationRef.current = conv;
       setError(null);
@@ -286,9 +286,8 @@ export default function RedRidingHoodStory() {
           {isConnected ? (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className={`p-2 rounded-full ${
-                isMuted ? "text-red-500" : "text-stone-500"
-              }`}
+              className={`p-2 rounded-full ${isMuted ? "text-red-500" : "text-stone-500"
+                }`}
             >
               {isMuted ? (
                 <MicOff className="w-4 h-4" />
@@ -389,7 +388,7 @@ export default function RedRidingHoodStory() {
           <div className="flex-1 flex flex-col">
             <div className="flex-1 grid lg:grid-cols-2 gap-4 p-4">
               {/* Left: Story Narration / Activities */}
-              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 flex flex-col min-h-[500px]">
+              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 flex flex-col min-h-125">
                 {/* Story Narration */}
                 {component.type === null && !isAwaitingInput && (
                   <div className="flex-1 flex flex-col justify-center">
@@ -428,11 +427,10 @@ export default function RedRidingHoodStory() {
                         hold down spacebar to speak
                       </p>
                       <button
-                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${
-                          isHoldingSpacebar
-                            ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
-                            : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
-                        }`}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-medium transition-all ${isHoldingSpacebar
+                          ? "bg-red-500 border-red-500 text-white scale-105 shadow-lg"
+                          : "bg-white border-stone-300 text-stone-700 hover:border-stone-400"
+                          }`}
                       >
                         {isHoldingSpacebar ? (
                           <>
@@ -481,17 +479,16 @@ export default function RedRidingHoodStory() {
               </div>
 
               {/* Right: Character Display */}
-              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+              <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col min-h-125">
                 <div
-                  className={`flex-1 p-6 flex flex-col items-center justify-center transition-all ${
-                    currentSpeaker === "red-riding-hood"
-                      ? "bg-gradient-to-br from-red-400 to-rose-500"
-                      : currentSpeaker === "grandmother"
-                      ? "bg-gradient-to-br from-purple-400 to-pink-500"
+                  className={`flex-1 p-6 flex flex-col items-center justify-center transition-all ${currentSpeaker === "red-riding-hood"
+                    ? "bg-linear-to-br from-red-400 to-rose-500"
+                    : currentSpeaker === "grandmother"
+                      ? "bg-linear-to-br from-purple-400 to-pink-500"
                       : currentSpeaker === "wolf"
-                      ? "bg-gradient-to-br from-slate-600 to-gray-700"
-                      : "bg-gradient-to-br from-amber-200 to-orange-300"
-                  }`}
+                        ? "bg-linear-to-br from-slate-600 to-gray-700"
+                        : "bg-linear-to-br from-amber-200 to-orange-300"
+                    }`}
                 >
                   <div className="text-8xl mb-4">
                     {currentSpeaker === "narrator"
@@ -513,13 +510,12 @@ export default function RedRidingHoodStory() {
                     {[...Array(10)].map((_, i) => (
                       <div
                         key={i}
-                        className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                          i + 1 === currentScene
-                            ? "bg-red-500"
-                            : i + 1 < currentScene
+                        className={`w-2.5 h-2.5 rounded-full transition-colors ${i + 1 === currentScene
+                          ? "bg-red-500"
+                          : i + 1 < currentScene
                             ? "bg-red-300"
                             : "bg-stone-200"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -541,23 +537,20 @@ export default function RedRidingHoodStory() {
                   return (
                     <div
                       key={charId}
-                      className={`flex flex-col items-center transition-all ${
-                        hasAppeared ? "opacity-100" : "opacity-30"
-                      }`}
+                      className={`flex flex-col items-center transition-all ${hasAppeared ? "opacity-100" : "opacity-30"
+                        }`}
                     >
                       <div
-                        className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl transition-all ${
-                          isActive
-                            ? "ring-4 ring-yellow-400 scale-110 shadow-lg bg-gradient-to-br from-yellow-100 to-amber-100"
-                            : "ring-2 ring-stone-200 bg-stone-100"
-                        }`}
+                        className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl transition-all ${isActive
+                          ? "ring-4 ring-yellow-400 scale-110 shadow-lg bg-linear-to-br from-yellow-100 to-amber-100"
+                          : "ring-2 ring-stone-200 bg-stone-100"
+                          }`}
                       >
                         {char.avatar}
                       </div>
                       <p
-                        className={`text-xs font-medium mt-1 ${
-                          isActive ? "text-stone-900" : "text-stone-500"
-                        }`}
+                        className={`text-xs font-medium mt-1 ${isActive ? "text-stone-900" : "text-stone-500"
+                          }`}
                       >
                         {char.name.split(" ")[0]}
                       </p>
