@@ -125,16 +125,73 @@ export default function RedRidingHoodStory() {
           console.error("Conversation error:", message);
           setError("Connection error occurred");
         },
-        onMessage: (message: unknown) => {
-          console.log("Message received:", message);
-          // Client tool calls should come through as messages
-          const msg = message as { type?: string; tool_name?: string; parameters?: Record<string, unknown> };
-          if (msg.type === "client_tool_call" && msg.tool_name) {
-            handleToolCall({
-              toolName: msg.tool_name,
-              parameters: msg.parameters || {},
+        clientTools: {
+          show_graphic: (parameters: { scene: number; description: string }) => {
+            console.log("show_graphic called:", parameters);
+            setCurrentScene(parameters.scene || 1);
+            // No return value needed for expects_response: false
+          },
+
+          change_voice: (parameters: { character: string }) => {
+            console.log("change_voice called:", parameters);
+            setCurrentCharacter(parameters.character);
+            // No return value needed for expects_response: false
+          },
+
+          show_math: async (parameters: { question: string; answer: number; hint?: string }) => {
+            console.log("show_math called:", parameters);
+
+            // Return a promise that resolves when student completes the challenge
+            return new Promise<string>((resolve) => {
+              setComponent({
+                type: "math",
+                props: {
+                  question: parameters.question,
+                  answer: parameters.answer,
+                  hint: parameters.hint,
+                  onComplete: (correct: boolean) => {
+                    console.log(`Math challenge completed: ${correct ? 'correct' : 'incorrect'}`);
+                    setComponent({ type: null });
+                    // Return result to agent
+                    resolve(JSON.stringify({ correct }));
+                  },
+                },
+              });
             });
-          }
+          },
+
+          show_spelling: async (parameters: { word: string; context: string }) => {
+            console.log("show_spelling called:", parameters);
+
+            // Return a promise that resolves when student completes the challenge
+            return new Promise<string>((resolve) => {
+              setComponent({
+                type: "spelling",
+                props: {
+                  word: parameters.word,
+                  context: parameters.context,
+                  onComplete: (correct: boolean) => {
+                    console.log(`Spelling challenge completed: ${correct ? 'correct' : 'incorrect'}`);
+                    setComponent({ type: null });
+                    // Return result to agent
+                    resolve(JSON.stringify({ correct }));
+                  },
+                },
+              });
+            });
+          },
+
+          show_completion: (parameters: { message: string }) => {
+            console.log("show_completion called:", parameters);
+            setComponent({
+              type: "completion",
+              props: {
+                message: parameters.message,
+              },
+            });
+            setTimeout(() => setComponent({ type: null }), 3000);
+            // No return value needed for expects_response: false
+          },
         },
       });
 
@@ -147,67 +204,6 @@ export default function RedRidingHoodStory() {
       console.error("Error starting conversation:", error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleToolCall = (toolCall: {
-    toolName: string;
-    parameters: Record<string, unknown>;
-    toolCallId?: string;
-  }) => {
-    const { toolName, parameters } = toolCall;
-
-    switch (toolName) {
-      case "show_graphic":
-        setCurrentScene((parameters.scene as number) || 1);
-        break;
-
-      case "change_voice":
-        // Voice switching is handled server-side by ElevenLabs when using supported_voices
-        // We just update the UI to show which character is speaking
-        const character = parameters.character as string;
-        setCurrentCharacter(character);
-        console.log(`Voice indicator updated to: ${character}`);
-        break;
-
-      case "show_math":
-        setComponent({
-          type: "math",
-          props: {
-            question: parameters.question,
-            answer: parameters.answer,
-            hint: parameters.hint,
-            onComplete: (correct: boolean) => {
-              console.log(`Math challenge completed: ${correct ? 'correct' : 'incorrect'}`);
-              setComponent({ type: null });
-            },
-          },
-        });
-        break;
-
-      case "show_spelling":
-        setComponent({
-          type: "spelling",
-          props: {
-            word: parameters.word,
-            context: parameters.context,
-            onComplete: (correct: boolean) => {
-              console.log(`Spelling challenge completed: ${correct ? 'correct' : 'incorrect'}`);
-              setComponent({ type: null });
-            },
-          },
-        });
-        break;
-
-      case "show_completion":
-        setComponent({
-          type: "completion",
-          props: {
-            message: parameters.message,
-          },
-        });
-        setTimeout(() => setComponent({ type: null }), 3000);
-        break;
     }
   };
 
