@@ -43,7 +43,7 @@ export default function SpellingChallenge({
 
       <button
         onClick={handlePlayAudio}
-        className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-700 mb-3"
+        className="inline-flex items-center gap-1.5 text-xs text-stone-50 hover:text-stone-700 mb-3"
       >
         <Volume2 className="w-3 h-3" />
         Hear word
@@ -53,7 +53,7 @@ export default function SpellingChallenge({
         type="text"
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
-        className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:border-stone-500 focus:ring-0 outline-none mb-2 tracking-wide"
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg text-black text-sm focus:border-stone-500 focus:ring-0 outline-none mb-2 tracking-wide"
         placeholder="Spell it"
         disabled={feedback === "correct"}
       />

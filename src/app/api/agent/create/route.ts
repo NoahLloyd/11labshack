@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStoryById } from "@/config/stories";
+import { getStoryById, type StoryCharacter } from "@/config/stories";
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     // Build supported_voices array from story config
     const supportedVoices = [
       storyConfig.narratorVoice,
-      ...storyConfig.characters.map((char) => char.voiceConfig),
+      ...storyConfig.characters.map((char: StoryCharacter) => char.voiceConfig),
     ];
 
     console.log("📢 Supported voices configuration:");
@@ -79,13 +79,14 @@ export async function POST(request: Request) {
                 type: "client",
                 name: "show_narration",
                 description:
-                  "REQUIRED: Display text on screen while you speak. Call this EVERY time you narrate story text so students can read along.",
+                  "REQUIRED: Display text on screen while you speak. Call this EVERY time you narrate story text. Use XML voice tags for character dialogue: <red_riding_hood>, <wolf>, <grandmother>",
                 parameters: {
                   type: "object",
                   properties: {
                     text: {
                       type: "string",
-                      description: "The narration text to display",
+                      description:
+                        "The narration text to display. Use XML tags for character voices: <red_riding_hood>dialogue</red_riding_hood>",
                     },
                     speaker: {
                       type: "string",

@@ -72,14 +72,6 @@ const scenes = storyConfig?.scenes || [];
 // Avatar list for display (derived from characters)
 const avatarList = Object.values(characters);
 
-// Map backend voice names to frontend CharacterIds
-const voiceToCharacter: Record<string, CharacterId | "narrator"> = {
-  narrator: "owl",
-  red_riding_hood: "red-riding-hood",
-  wolf: "wolf",
-  grandmother: "grandmother",
-};
-
 export default function RedRidingHoodStory() {
   const [agentId, setAgentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -102,6 +94,7 @@ export default function RedRidingHoodStory() {
   const [storyText, setStoryText] = useState<string>("");
   const [isAwaitingInput, setIsAwaitingInput] = useState(false);
   const [isHoldingSpacebar, setIsHoldingSpacebar] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isAnimatedMode, setIsAnimatedMode] = useState(false);
 
   const conversationRef = useRef<Conversation | null>(null);
@@ -202,13 +195,15 @@ export default function RedRidingHoodStory() {
           console.error("Conversation error:", error);
           setError("Connection error");
         },
-        onMessage: (message: string) => {
-          console.log("📨 Message received:", message);
-          
-          // Detect voice changes from XML markup in the message
-          const voiceMatches = message.match(/<(red_riding_hood|wolf|grandmother)>/g);
-          if (voiceMatches) {
-            console.log("🎤 Voice XML tags detected in message:", voiceMatches);
+        onMessage: (data: { message: string; source?: string; role?: string }) => {
+          console.log("📨 Message received:", data);
+
+          // Detect voice changes from XML markup in the message text
+          if (data.message && typeof data.message === 'string') {
+            const voiceMatches = data.message.match(/<(red_riding_hood|wolf|grandmother)>/g);
+            if (voiceMatches) {
+              console.log("🎤 Voice XML tags detected in message:", voiceMatches);
+            }
           }
         },
         onModeChange: (mode: { mode: string }) => {
@@ -234,7 +229,11 @@ export default function RedRidingHoodStory() {
               text: parameters.text.substring(0, 50) + "...",
               speaker: parameters.speaker,
             });
-            setStoryText(parameters.text);
+
+            // Strip XML voice tags from display text (they're only for ElevenLabs)
+            const cleanText = parameters.text.replace(/<\/?(?:red_riding_hood|wolf|grandmother)>/g, '');
+
+            setStoryText(cleanText);
             if (parameters.speaker) {
               console.log("🗣️ Setting speaker to:", parameters.speaker);
               setCurrentSpeaker(parameters.speaker as Speaker);
