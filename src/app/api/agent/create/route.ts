@@ -40,6 +40,13 @@ export async function POST(request: Request) {
       ...storyConfig.characters.map((char) => char.voiceConfig),
     ];
 
+    console.log("📢 Supported voices configuration:");
+    supportedVoices.forEach((voice) => {
+      console.log(
+        `  - ${voice.label}: ${voice.voice_id} (${voice.description})`
+      );
+    });
+
     const agentConfig = {
       conversation_config: {
         agent: {
@@ -194,30 +201,6 @@ export async function POST(request: Request) {
                     },
                   },
                   required: ["message"],
-                },
-                expects_response: false,
-              },
-              {
-                type: "client",
-                name: "change_voice",
-                description:
-                  "REQUIRED: Call this BEFORE speaking character dialogue to switch voices. Use 'narrator' for narration, 'red_riding_hood' for Red, 'wolf' for Wolf, 'grandmother' for Grandma. This makes the story immersive.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    character: {
-                      type: "string",
-                      enum: [
-                        "narrator",
-                        "red_riding_hood",
-                        "wolf",
-                        "grandmother",
-                      ],
-                      description:
-                        "Which character is about to speak: narrator (default/huntsman/mother), red_riding_hood (young girl), wolf (cunning antagonist), grandmother (elderly woman)",
-                    },
-                  },
-                  required: ["character"],
                 },
                 expects_response: false,
               },

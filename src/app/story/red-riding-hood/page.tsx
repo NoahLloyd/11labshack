@@ -203,7 +203,13 @@ export default function RedRidingHoodStory() {
           setError("Connection error");
         },
         onMessage: (message: string) => {
-          console.log("Message received:", message);
+          console.log("📨 Message received:", message);
+          
+          // Detect voice changes from XML markup in the message
+          const voiceMatches = message.match(/<(red_riding_hood|wolf|grandmother)>/g);
+          if (voiceMatches) {
+            console.log("🎤 Voice XML tags detected in message:", voiceMatches);
+          }
         },
         onModeChange: (mode: { mode: string }) => {
           console.log("Mode changed:", mode);
@@ -297,34 +303,6 @@ export default function RedRidingHoodStory() {
               props: { message: parameters.message },
             });
             setTimeout(() => setComponent({ type: null }), 3000);
-          },
-          change_voice: (parameters: { character: string }) => {
-            console.log("🎤 [TOOL] change_voice called:", parameters);
-            const voiceChar = parameters.character;
-
-            // Map voice labels to display characters
-            if (voiceChar === "narrator") {
-              console.log("🦉 Switching to NARRATOR voice");
-              setCurrentSpeaker("narrator");
-              setIsAnimatedMode(true);
-            } else if (voiceChar === "red_riding_hood") {
-              console.log("👧 Switching to RED RIDING HOOD voice");
-              setCurrentSpeaker("red-riding-hood");
-              setIsAnimatedMode(true);
-              setAppearedCharacters((prev) => new Set(prev).add("red-riding-hood"));
-            } else if (voiceChar === "wolf") {
-              console.log("🐺 Switching to WOLF voice");
-              setCurrentSpeaker("wolf");
-              setIsAnimatedMode(true);
-              setAppearedCharacters((prev) => new Set(prev).add("wolf"));
-            } else if (voiceChar === "grandmother") {
-              console.log("👵 Switching to GRANDMOTHER voice");
-              setCurrentSpeaker("grandmother");
-              setIsAnimatedMode(true);
-              setAppearedCharacters((prev) => new Set(prev).add("grandmother"));
-            } else {
-              console.warn("⚠️ Unknown voice character:", voiceChar);
-            }
           },
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

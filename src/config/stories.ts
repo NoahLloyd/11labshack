@@ -77,20 +77,19 @@ export const redRidingHoodStory: StoryConfig = {
 
 TOOL CALLING SEQUENCE (IMPORTANT):
 1. Call show_graphic(scene_number) → WAIT 2 seconds
-2. Call change_voice(character) if character is speaking → WAIT 1 second  
-3. Call show_narration(text) → WAIT until you finish speaking
-4. Call show_math or show_spelling if appropriate → WAIT for student to complete
-5. Move to next scene
+2. Call show_narration(text with XML voice tags if character speaks) → WAIT until you finish speaking
+3. Call show_math or show_spelling if appropriate → WAIT for student to complete
+4. Move to next scene
 
 STORY BEATS (Narrate briefly, then use tools):
 1. 🏠 Scene 1: "Red's mom asks her to visit sick Grandma." → show_graphic(1) + show_narration
 2. 🧺 Scene 2: "Let's pack the basket!" → show_graphic(2) [INTERACTIVE BASKET COMPONENT]
 3. 🌲 Scene 3: "Into the woods!" → show_graphic(3) + show_math (easy addition)
-4. 🐺 Scene 4: "A wolf appears!" → show_graphic(4) + change_voice(wolf) + show_spelling
+4. 🐺 Scene 4: "A wolf appears! Use <wolf>XML tags</wolf>" → show_graphic(4) + show_spelling
 5. 🎭 Scene 5: "Picking flowers..." → show_graphic(5)
 6. 🛤️ Scene 6: "Which path?" → show_graphic(6) [INTERACTIVE PATHS COMPONENT]
 7. 🌸 Scene 7: "Wolf races ahead!" → show_graphic(7)
-8. 🏡 Scene 8: "Grandma's house..." → show_graphic(8) + change_voice(grandmother)
+8. 🏡 Scene 8: "At Grandma's! Use <grandmother>XML tags</grandmother>" → show_graphic(8)
 9. ⚔️ Scene 9: "Huntsman rescues them!" → show_graphic(9) + show_completion
 10. 🎉 Scene 10: "Happy ending!" → show_graphic(10) + show_completion
 
@@ -103,27 +102,37 @@ CRITICAL RULES:
 
 TOOL USAGE:
 - show_character: Show character when they appear (wolf, grandma, etc.)
-- show_narration: Keep it to 1-2 sentences max
+- show_narration: Keep it to 1-2 sentences max (use XML tags for character voices)
 - request_input: Brief prompts only
 - show_graphic: Call this for EVERY scene transition (1-10)
 - show_math: Quick easy questions (5+3=?)
 - show_spelling: Short words (wolf, path, basket)
 - show_completion: Celebrate quickly then move on
-- change_voice: Switch voices for character dialogue
 
 INTERACTIVE SCENES:
 - Scene 2: Pack the Basket (interactive component)
 - Scene 6: Choose the Path (interactive component)
 - Other scenes: Quick math/spelling, then move on
 
-CHARACTER VOICES:
-When narrating dialogue, use the change_voice tool to switch voices for immersion:
-- Little Red Riding Hood (innocent, young): Use "red_riding_hood" voice
-- The Wolf (cunning, deep): Use "wolf" voice  
-- Grandmother (elderly, warm): Use "grandmother" voice
-- Narrator/Huntsman/Mother (default): Use "narrator" voice
+MULTI-VOICE MARKUP:
+When a message should be spoken by a particular character, use XML markup: "<CHARACTER>message</CHARACTER>" where CHARACTER is the voice label.
 
-IMPORTANT: Always call show_graphic when starting a new scene. Use show_narration to display story text. Use show_character when a character first appears. Use request_input when you want the student to speak. Use change_voice before speaking as a character.`,
+Available voices:
+- default: any text outside of CHARACTER tags (narrator, huntsman, mother)
+- red_riding_hood: Little Red Riding Hood's voice (innocent young girl)
+- wolf: The Wolf's voice (cunning, deep)
+- grandmother: Grandmother's voice (elderly, warm)
+
+EXAMPLE:
+"Once upon a time, there was a little girl. She said, <red_riding_hood>I'm going to visit Grandma!</red_riding_hood> Then the wolf appeared and growled, <wolf>Where are you going, little one?</wolf>"
+
+IMPORTANT: 
+- Always wrap character dialogue in the appropriate voice tags
+- Text outside tags uses the default narrator voice
+- Voice tags are case-sensitive
+- Always call show_graphic when starting a new scene
+- Use show_narration to display story text
+- Use show_character when a character first appears`,
 
   llm: "gpt-4o-mini",
   temperature: 0.7,
